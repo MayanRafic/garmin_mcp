@@ -3,9 +3,8 @@
 import os
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
-import pytest
 
 from garmin_mcp.token_utils import (
     get_token_path,
@@ -105,7 +104,9 @@ class TestValidateTokens:
     def test_invalid_tokens_file_not_found(self, mock_garmin, mock_exists):
         """Test validation when token files not found."""
         mock_exists.return_value = True
-        mock_garmin.return_value.login.side_effect = FileNotFoundError("Token files missing")
+        mock_garmin.return_value.login.side_effect = FileNotFoundError(
+            "Token files missing"
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             is_valid, error = validate_tokens(tmpdir)

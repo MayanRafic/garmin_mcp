@@ -193,7 +193,7 @@ def init_api(email, password):
                 print(f"Error: {error_msg.split(':')[0]}", file=sys.stderr)
 
             print(
-                f"\nTip: Run 'garmin-mcp-auth' to authenticate interactively.",
+                "\nTip: Run 'garmin-mcp-auth' to authenticate interactively.",
                 file=sys.stderr,
             )
             return None

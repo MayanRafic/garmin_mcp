@@ -76,7 +76,12 @@ def get_credentials() -> tuple[str, str]:
     return email, password
 
 
-def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = False, is_cn: bool = False) -> bool:
+def authenticate(
+    token_path: str,
+    token_base64_path: str,
+    force_reauth: bool = False,
+    is_cn: bool = False,
+) -> bool:
     """Authenticate with Garmin Connect and save tokens.
 
     Args:
@@ -105,7 +110,7 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
 
         if is_valid:
             print("✓ Existing tokens are valid. Authentication not needed.")
-            print(f"  Use --force-reauth to generate new tokens.")
+            print("  Use --force-reauth to generate new tokens.")
             return True
         else:
             print(f"✗ Existing tokens are invalid: {error_msg}")
@@ -143,12 +148,12 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
         try:
             # Try to get user's full name as a simple verification
             full_name = garmin.get_full_name()
-            print(f"✓ Authentication successful!")
+            print("✓ Authentication successful!")
             print(f"  Logged in as: {full_name}")
         except Exception:
             # Fallback: just confirm tokens were saved
-            print(f"✓ Authentication successful!")
-            print(f"  OAuth tokens saved and ready to use.")
+            print("✓ Authentication successful!")
+            print("  OAuth tokens saved and ready to use.")
 
         print("\n" + "=" * 60)
         print("SUCCESS: You can now use the Garmin MCP server!")
@@ -163,7 +168,7 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
 
     except GarminConnectAuthenticationError as e:
         error_msg = str(e)
-        print(f"\n✗ Authentication failed", file=sys.stderr)
+        print("\n✗ Authentication failed", file=sys.stderr)
 
         # Provide helpful hints based on error type
         if "MFA" in error_msg or "code" in error_msg.lower():
@@ -179,27 +184,42 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
 
     except GarthHTTPError as e:
         error_msg = str(e)
-        print(f"\n✗ Authentication error", file=sys.stderr)
+        print("\n✗ Authentication error", file=sys.stderr)
 
         if "429" in error_msg:
-            print("  Too many requests. Please wait a few minutes and try again.", file=sys.stderr)
+            print(
+                "  Too many requests. Please wait a few minutes and try again.",
+                file=sys.stderr,
+            )
         elif "401" in error_msg or "403" in error_msg:
-            print("  Invalid credentials. Please check your email and password.", file=sys.stderr)
+            print(
+                "  Invalid credentials. Please check your email and password.",
+                file=sys.stderr,
+            )
         elif "500" in error_msg or "503" in error_msg:
-            print("  Garmin Connect service issue. Please try again later.", file=sys.stderr)
+            print(
+                "  Garmin Connect service issue. Please try again later.",
+                file=sys.stderr,
+            )
         else:
             print(f"  {error_msg.split(':')[0]}", file=sys.stderr)
 
         return False
 
     except requests.exceptions.HTTPError as e:
-        print(f"\n✗ Network error", file=sys.stderr)
+        print("\n✗ Network error", file=sys.stderr)
 
         if e.response is not None:
             if e.response.status_code == 429:
-                print("  Rate limited. Please wait a few minutes and try again.", file=sys.stderr)
+                print(
+                    "  Rate limited. Please wait a few minutes and try again.",
+                    file=sys.stderr,
+                )
             elif e.response.status_code >= 500:
-                print("  Garmin Connect is experiencing issues. Please try again later.", file=sys.stderr)
+                print(
+                    "  Garmin Connect is experiencing issues. Please try again later.",
+                    file=sys.stderr,
+                )
             else:
                 print(f"  HTTP {e.response.status_code} error", file=sys.stderr)
         else:
@@ -209,13 +229,19 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
 
     except Exception as e:
         error_msg = str(e)
-        print(f"\n✗ Unexpected error", file=sys.stderr)
+        print("\n✗ Unexpected error", file=sys.stderr)
 
         # Only show detailed error in debug scenarios
         if "timeout" in error_msg.lower():
-            print("  Connection timeout. Please check your internet connection.", file=sys.stderr)
+            print(
+                "  Connection timeout. Please check your internet connection.",
+                file=sys.stderr,
+            )
         elif "connection" in error_msg.lower():
-            print("  Network connection issue. Please check your internet.", file=sys.stderr)
+            print(
+                "  Network connection issue. Please check your internet.",
+                file=sys.stderr,
+            )
         else:
             print(f"  {error_msg.split(':')[0]}", file=sys.stderr)
 
@@ -241,7 +267,7 @@ def verify_tokens(token_path: str) -> bool:
         return False
 
     if info["valid"]:
-        print(f"✓ Tokens are valid!")
+        print("✓ Tokens are valid!")
         print(f"  Location: {info['expanded_path']}")
         print("\nYou can use the Garmin MCP server without re-authenticating.")
         return True
@@ -272,33 +298,33 @@ Examples:
 
   # Use custom token location
   garmin-mcp-auth --token-path ~/.garmin_tokens
-        """
+        """,
     )
 
     parser.add_argument(
         "--token-path",
         type=str,
         default=None,
-        help="Custom token storage directory (default: ~/.garminconnect or $GARMINTOKENS)"
+        help="Custom token storage directory (default: ~/.garminconnect or $GARMINTOKENS)",
     )
 
     parser.add_argument(
         "--verify",
         action="store_true",
-        help="Verify existing tokens without re-authenticating"
+        help="Verify existing tokens without re-authenticating",
     )
 
     parser.add_argument(
         "--force-reauth",
         action="store_true",
-        help="Force re-authentication even if valid tokens exist"
+        help="Force re-authentication even if valid tokens exist",
     )
 
     parser.add_argument(
         "--is-cn",
         action="store_true",
         default=None,
-        help="Use Garmin Connect China (garmin.cn) instead of the international version"
+        help="Use Garmin Connect China (garmin.cn) instead of the international version",
     )
 
     args = parser.parse_args()

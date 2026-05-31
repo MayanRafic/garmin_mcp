@@ -3,8 +3,7 @@ Training and performance functions for Garmin Connect MCP Server
 """
 
 import json
-import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -95,7 +94,7 @@ def register_tools(app):
             if isinstance(summary_data, list) and len(summary_data) > 0:
                 data = summary_data[0]
             else:
-                return f"Unexpected response format from API"
+                return "Unexpected response format from API"
 
             # Curate to essential fields only
             curated = {
@@ -453,7 +452,9 @@ def register_tools(app):
                     if comp_data.get("targetValue") is not None:
                         comp_info["target"] = comp_data.get("targetValue")
                     if comp_data.get("improvementValue") is not None:
-                        comp_info["improvement_needed"] = comp_data.get("improvementValue")
+                        comp_info["improvement_needed"] = comp_data.get(
+                            "improvementValue"
+                        )
                     if comp_data.get("potentialAge") is not None:
                         comp_info["potential_age_if_improved"] = round(
                             comp_data.get("potentialAge"), 1
@@ -463,7 +464,9 @@ def register_tools(app):
                     if comp_data.get("stale") is not None:
                         comp_info["stale"] = comp_data.get("stale")
                     if comp_data.get("lastMeasurementDate") is not None:
-                        comp_info["last_measurement"] = comp_data.get("lastMeasurementDate")
+                        comp_info["last_measurement"] = comp_data.get(
+                            "lastMeasurementDate"
+                        )
 
                     curated_components[comp_name] = comp_info
 

@@ -1,9 +1,8 @@
 """
 Activity Management functions for Garmin Connect MCP Server
 """
+
 import json
-import datetime
-from typing import Any, Dict, List, Optional, Union
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -19,7 +18,9 @@ def register_tools(app):
     """Register all activity management tools with the MCP server app"""
 
     @app.tool()
-    async def get_activities_by_date(start_date: str, end_date: str, activity_type: str = "") -> str:
+    async def get_activities_by_date(
+        start_date: str, end_date: str, activity_type: str = ""
+    ) -> str:
         """Get activities data between specified dates, optionally filtered by activity type
 
         Args:
@@ -28,30 +29,33 @@ def register_tools(app):
             activity_type: Optional activity type filter (e.g., cycling, running, swimming)
         """
         try:
-            activities = garmin_client.get_activities_by_date(start_date, end_date, activity_type)
+            activities = garmin_client.get_activities_by_date(
+                start_date, end_date, activity_type
+            )
             if not activities:
-                return f"No activities found between {start_date} and {end_date}" + \
-                       (f" for activity type '{activity_type}'" if activity_type else "")
+                return f"No activities found between {start_date} and {end_date}" + (
+                    f" for activity type '{activity_type}'" if activity_type else ""
+                )
 
             # Curate the activity list
             curated = {
                 "count": len(activities),
                 "date_range": {"start": start_date, "end": end_date},
-                "activities": []
+                "activities": [],
             }
 
             for a in activities:
                 activity = {
-                    "id": a.get('activityId'),
-                    "name": a.get('activityName'),
-                    "type": a.get('activityType', {}).get('typeKey'),
-                    "start_time": a.get('startTimeLocal'),
-                    "distance_meters": a.get('distance'),
-                    "duration_seconds": a.get('duration'),
-                    "calories": a.get('calories'),
-                    "avg_hr_bpm": a.get('averageHR'),
-                    "max_hr_bpm": a.get('maxHR'),
-                    "steps": a.get('steps'),
+                    "id": a.get("activityId"),
+                    "name": a.get("activityName"),
+                    "type": a.get("activityType", {}).get("typeKey"),
+                    "start_time": a.get("startTimeLocal"),
+                    "distance_meters": a.get("distance"),
+                    "duration_seconds": a.get("duration"),
+                    "calories": a.get("calories"),
+                    "avg_hr_bpm": a.get("averageHR"),
+                    "max_hr_bpm": a.get("maxHR"),
+                    "steps": a.get("steps"),
                 }
                 # Remove None values
                 activity = {k: v for k, v in activity.items() if v is not None}
@@ -74,32 +78,28 @@ def register_tools(app):
                 return f"No activities found for {date}"
 
             # Extract just the activities, not the embedded HR data
-            activities_data = data.get('ActivitiesForDay', {})
-            payload = activities_data.get('payload', [])
+            activities_data = data.get("ActivitiesForDay", {})
+            payload = activities_data.get("payload", [])
 
             if not payload:
                 return f"No activities found for {date}"
 
-            curated = {
-                "date": date,
-                "count": len(payload),
-                "activities": []
-            }
+            curated = {"date": date, "count": len(payload), "activities": []}
 
             for a in payload:
                 activity = {
-                    "id": a.get('activityId'),
-                    "name": a.get('activityName'),
-                    "type": a.get('activityType', {}).get('typeKey'),
-                    "start_time": a.get('startTimeLocal'),
-                    "distance_meters": a.get('distance'),
-                    "duration_seconds": a.get('duration'),
-                    "calories": a.get('calories'),
-                    "avg_hr_bpm": a.get('averageHR'),
-                    "steps": a.get('steps'),
-                    "lap_count": a.get('lapCount'),
-                    "moderate_intensity_minutes": a.get('moderateIntensityMinutes'),
-                    "vigorous_intensity_minutes": a.get('vigorousIntensityMinutes'),
+                    "id": a.get("activityId"),
+                    "name": a.get("activityName"),
+                    "type": a.get("activityType", {}).get("typeKey"),
+                    "start_time": a.get("startTimeLocal"),
+                    "distance_meters": a.get("distance"),
+                    "duration_seconds": a.get("duration"),
+                    "calories": a.get("calories"),
+                    "avg_hr_bpm": a.get("averageHR"),
+                    "steps": a.get("steps"),
+                    "lap_count": a.get("lapCount"),
+                    "moderate_intensity_minutes": a.get("moderateIntensityMinutes"),
+                    "vigorous_intensity_minutes": a.get("vigorousIntensityMinutes"),
                 }
                 # Remove None values
                 activity = {k: v for k, v in activity.items() if v is not None}
@@ -122,72 +122,61 @@ def register_tools(app):
                 return f"No activity found with ID {activity_id}"
 
             # Extract summary data
-            summary = activity.get('summaryDTO', {})
-            activity_type = activity.get('activityTypeDTO', {})
-            metadata = activity.get('metadataDTO', {})
+            summary = activity.get("summaryDTO", {})
+            activity_type = activity.get("activityTypeDTO", {})
+            metadata = activity.get("metadataDTO", {})
 
             curated = {
-                "id": activity.get('activityId'),
-                "name": activity.get('activityName'),
-                "type": activity_type.get('typeKey'),
-                "parent_type": activity_type.get('parentTypeId'),
-
+                "id": activity.get("activityId"),
+                "name": activity.get("activityName"),
+                "type": activity_type.get("typeKey"),
+                "parent_type": activity_type.get("parentTypeId"),
                 # Timing
-                "start_time_local": summary.get('startTimeLocal'),
-                "start_time_gmt": summary.get('startTimeGMT'),
-                "duration_seconds": summary.get('duration'),
-                "moving_duration_seconds": summary.get('movingDuration'),
-                "elapsed_duration_seconds": summary.get('elapsedDuration'),
-
+                "start_time_local": summary.get("startTimeLocal"),
+                "start_time_gmt": summary.get("startTimeGMT"),
+                "duration_seconds": summary.get("duration"),
+                "moving_duration_seconds": summary.get("movingDuration"),
+                "elapsed_duration_seconds": summary.get("elapsedDuration"),
                 # Distance and speed
-                "distance_meters": summary.get('distance'),
-                "avg_speed_mps": summary.get('averageSpeed'),
-                "max_speed_mps": summary.get('maxSpeed'),
-
+                "distance_meters": summary.get("distance"),
+                "avg_speed_mps": summary.get("averageSpeed"),
+                "max_speed_mps": summary.get("maxSpeed"),
                 # Heart rate
-                "avg_hr_bpm": summary.get('averageHR'),
-                "max_hr_bpm": summary.get('maxHR'),
-                "min_hr_bpm": summary.get('minHR'),
-
+                "avg_hr_bpm": summary.get("averageHR"),
+                "max_hr_bpm": summary.get("maxHR"),
+                "min_hr_bpm": summary.get("minHR"),
                 # Calories
-                "calories": summary.get('calories'),
-                "bmr_calories": summary.get('bmrCalories'),
-
+                "calories": summary.get("calories"),
+                "bmr_calories": summary.get("bmrCalories"),
                 # Running metrics
-                "avg_cadence": summary.get('averageRunCadence'),
-                "max_cadence": summary.get('maxRunCadence'),
-                "avg_stride_length_cm": summary.get('strideLength'),
-                "avg_ground_contact_time_ms": summary.get('groundContactTime'),
-                "avg_vertical_oscillation_cm": summary.get('verticalOscillation'),
-                "steps": summary.get('steps'),
-
+                "avg_cadence": summary.get("averageRunCadence"),
+                "max_cadence": summary.get("maxRunCadence"),
+                "avg_stride_length_cm": summary.get("strideLength"),
+                "avg_ground_contact_time_ms": summary.get("groundContactTime"),
+                "avg_vertical_oscillation_cm": summary.get("verticalOscillation"),
+                "steps": summary.get("steps"),
                 # Power
-                "avg_power_watts": summary.get('averagePower'),
-                "max_power_watts": summary.get('maxPower'),
-                "normalized_power_watts": summary.get('normalizedPower'),
-
+                "avg_power_watts": summary.get("averagePower"),
+                "max_power_watts": summary.get("maxPower"),
+                "normalized_power_watts": summary.get("normalizedPower"),
                 # Training effect
-                "training_effect": summary.get('trainingEffect'),
-                "anaerobic_training_effect": summary.get('anaerobicTrainingEffect'),
-                "training_effect_label": summary.get('trainingEffectLabel'),
-                "training_load": summary.get('activityTrainingLoad'),
-
+                "training_effect": summary.get("trainingEffect"),
+                "anaerobic_training_effect": summary.get("anaerobicTrainingEffect"),
+                "training_effect_label": summary.get("trainingEffectLabel"),
+                "training_load": summary.get("activityTrainingLoad"),
                 # Intensity minutes
-                "moderate_intensity_minutes": summary.get('moderateIntensityMinutes'),
-                "vigorous_intensity_minutes": summary.get('vigorousIntensityMinutes'),
-
+                "moderate_intensity_minutes": summary.get("moderateIntensityMinutes"),
+                "vigorous_intensity_minutes": summary.get("vigorousIntensityMinutes"),
                 # Recovery
-                "recovery_hr_bpm": summary.get('recoveryHeartRate'),
-                "body_battery_impact": summary.get('differenceBodyBattery'),
-
+                "recovery_hr_bpm": summary.get("recoveryHeartRate"),
+                "body_battery_impact": summary.get("differenceBodyBattery"),
                 # Workout feedback
-                "workout_feel": summary.get('directWorkoutFeel'),
-                "workout_rpe": summary.get('directWorkoutRpe'),
-
+                "workout_feel": summary.get("directWorkoutFeel"),
+                "workout_rpe": summary.get("directWorkoutRpe"),
                 # Metadata
-                "lap_count": metadata.get('lapCount'),
-                "has_splits": metadata.get('hasSplits'),
-                "device_manufacturer": metadata.get('manufacturer'),
+                "lap_count": metadata.get("lapCount"),
+                "has_splits": metadata.get("hasSplits"),
+                "device_manufacturer": metadata.get("manufacturer"),
             }
 
             # Remove None values
@@ -210,30 +199,30 @@ def register_tools(app):
                 return f"No splits found for activity with ID {activity_id}"
 
             # Curate the splits data
-            laps = splits.get('lapDTOs', [])
+            laps = splits.get("lapDTOs", [])
 
             curated = {
-                "activity_id": splits.get('activityId'),
+                "activity_id": splits.get("activityId"),
                 "lap_count": len(laps),
-                "laps": []
+                "laps": [],
             }
 
             for lap in laps:
                 lap_data = {
-                    "lap_number": lap.get('lapIndex'),
-                    "start_time": lap.get('startTimeGMT'),
-                    "distance_meters": lap.get('distance'),
-                    "duration_seconds": lap.get('duration'),
-                    "avg_speed_mps": lap.get('averageSpeed'),
-                    "max_speed_mps": lap.get('maxSpeed'),
-                    "avg_hr_bpm": lap.get('averageHR'),
-                    "max_hr_bpm": lap.get('maxHR'),
-                    "calories": lap.get('calories'),
-                    "avg_cadence": lap.get('averageRunCadence'),
-                    "avg_power_watts": lap.get('averagePower'),
-                    "intensity_type": lap.get('intensityType'),
-                    "elevation_gain_meters": lap.get('elevationGain'),
-                    "elevation_loss_meters": lap.get('elevationLoss'),
+                    "lap_number": lap.get("lapIndex"),
+                    "start_time": lap.get("startTimeGMT"),
+                    "distance_meters": lap.get("distance"),
+                    "duration_seconds": lap.get("duration"),
+                    "avg_speed_mps": lap.get("averageSpeed"),
+                    "max_speed_mps": lap.get("maxSpeed"),
+                    "avg_hr_bpm": lap.get("averageHR"),
+                    "max_hr_bpm": lap.get("maxHR"),
+                    "calories": lap.get("calories"),
+                    "avg_cadence": lap.get("averageRunCadence"),
+                    "avg_power_watts": lap.get("averagePower"),
+                    "intensity_type": lap.get("intensityType"),
+                    "elevation_gain_meters": lap.get("elevationGain"),
+                    "elevation_loss_meters": lap.get("elevationLoss"),
                 }
                 # Remove None values
                 lap_data = {k: v for k, v in lap_data.items() if v is not None}
@@ -290,15 +279,19 @@ def register_tools(app):
             # Curate weather data
             curated = {
                 "activity_id": activity_id,
-                "temperature_celsius": weather.get('temp'),
-                "apparent_temperature_celsius": weather.get('apparentTemp'),
-                "humidity_percent": weather.get('relativeHumidity'),
-                "wind_speed_mps": weather.get('windSpeed'),
-                "wind_direction_degrees": weather.get('windDirection'),
-                "weather_type": weather.get('weatherTypeDTO', {}).get('weatherTypeName'),
-                "weather_description": weather.get('weatherTypeDTO', {}).get('weatherTypeDesc'),
-                "location": weather.get('issueLocation'),
-                "issue_time": weather.get('issueDate'),
+                "temperature_celsius": weather.get("temp"),
+                "apparent_temperature_celsius": weather.get("apparentTemp"),
+                "humidity_percent": weather.get("relativeHumidity"),
+                "wind_speed_mps": weather.get("windSpeed"),
+                "wind_direction_degrees": weather.get("windDirection"),
+                "weather_type": weather.get("weatherTypeDTO", {}).get(
+                    "weatherTypeName"
+                ),
+                "weather_description": weather.get("weatherTypeDTO", {}).get(
+                    "weatherTypeDesc"
+                ),
+                "location": weather.get("issueLocation"),
+                "issue_time": weather.get("issueDate"),
             }
 
             # Remove None values
@@ -367,10 +360,13 @@ def register_tools(app):
             if count is None:
                 return "Unable to retrieve activity count"
 
-            return json.dumps({
-                "total_activities": count,
-                "note": "Use get_activities() with pagination to retrieve activity details"
-            }, indent=2)
+            return json.dumps(
+                {
+                    "total_activities": count,
+                    "note": "Use get_activities() with pagination to retrieve activity details",
+                },
+                indent=2,
+            )
         except Exception as e:
             return f"Error counting activities: {str(e)}"
 
@@ -400,23 +396,23 @@ def register_tools(app):
                 "count": len(activities),
                 "has_more": len(activities) == limit,
                 "next_start": start + limit if len(activities) == limit else None,
-                "activities": []
+                "activities": [],
             }
 
             for a in activities:
                 activity = {
-                    "id": a.get('activityId'),
-                    "name": a.get('activityName'),
-                    "type": a.get('activityType', {}).get('typeKey'),
-                    "start_time": a.get('startTimeLocal'),
-                    "distance_meters": a.get('distance'),
-                    "duration_seconds": a.get('duration'),
-                    "moving_duration_seconds": a.get('movingDuration'),
-                    "calories": a.get('calories'),
-                    "avg_hr_bpm": a.get('averageHR'),
-                    "max_hr_bpm": a.get('maxHR'),
-                    "steps": a.get('steps'),
-                    "owner_display_name": a.get('ownerDisplayName'),
+                    "id": a.get("activityId"),
+                    "name": a.get("activityName"),
+                    "type": a.get("activityType", {}).get("typeKey"),
+                    "start_time": a.get("startTimeLocal"),
+                    "distance_meters": a.get("distance"),
+                    "duration_seconds": a.get("duration"),
+                    "moving_duration_seconds": a.get("movingDuration"),
+                    "calories": a.get("calories"),
+                    "avg_hr_bpm": a.get("averageHR"),
+                    "max_hr_bpm": a.get("maxHR"),
+                    "steps": a.get("steps"),
+                    "owner_display_name": a.get("ownerDisplayName"),
                 }
                 # Remove None values
                 activity = {k: v for k, v in activity.items() if v is not None}
@@ -439,21 +435,20 @@ def register_tools(app):
                 return "No activity types found"
 
             # Curate the activity types list
-            curated = {
-                "count": len(activity_types),
-                "activity_types": []
-            }
+            curated = {"count": len(activity_types), "activity_types": []}
 
             for at in activity_types:
                 activity_type = {
-                    "type_id": at.get('typeId'),
-                    "type_key": at.get('typeKey'),
-                    "display_name": at.get('displayName'),
-                    "parent_type_id": at.get('parentTypeId'),
-                    "is_hidden": at.get('isHidden'),
+                    "type_id": at.get("typeId"),
+                    "type_key": at.get("typeKey"),
+                    "display_name": at.get("displayName"),
+                    "parent_type_id": at.get("parentTypeId"),
+                    "is_hidden": at.get("isHidden"),
                 }
                 # Remove None values
-                activity_type = {k: v for k, v in activity_type.items() if v is not None}
+                activity_type = {
+                    k: v for k, v in activity_type.items() if v is not None
+                }
                 curated["activity_types"].append(activity_type)
 
             return json.dumps(curated, indent=2)

@@ -4,6 +4,7 @@ Workout template resources for Garmin MCP Server
 Provides MCP resources with valid workout JSON structures that clients can
 read and use as templates for creating custom workouts via upload_workout.
 """
+
 import json
 
 # =============================================================================
@@ -14,189 +15,251 @@ SIMPLE_RUN_TEMPLATE = {
     "workoutName": "Simple Run",
     "description": "Basic run workout: warmup, run, cooldown",
     "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-    "workoutSegments": [{
-        "segmentOrder": 1,
-        "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutSteps": [
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
-                "description": "Warmup 5 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 300.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 2,
-                "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                "description": "Run 20 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 1200.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 3,
-                "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
-                "description": "Cooldown 5 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 300.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            }
-        ]
-    }]
+    "workoutSegments": [
+        {
+            "segmentOrder": 1,
+            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
+            "workoutSteps": [
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 1,
+                    "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
+                    "description": "Warmup 5 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 300.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 2,
+                    "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                    "description": "Run 20 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 1200.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 3,
+                    "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
+                    "description": "Cooldown 5 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 300.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+            ],
+        }
+    ],
 }
 
 INTERVAL_RUNNING_TEMPLATE = {
     "workoutName": "Interval Run",
     "description": "Interval workout with repeat groups: warmup, 6x(400m fast + 2min recovery), cooldown",
     "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-    "workoutSegments": [{
-        "segmentOrder": 1,
-        "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutSteps": [
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
-                "description": "Warmup 10 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 600.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            },
-            {
-                "type": "RepeatGroupDTO",
-                "stepOrder": 2,
-                "numberOfIterations": 6,
-                "workoutSteps": [
-                    {
-                        "type": "ExecutableStepDTO",
-                        "stepOrder": 1,
-                        "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                        "description": "Fast 400m",
-                        "endCondition": {"conditionTypeId": 3, "conditionTypeKey": "distance"},
-                        "endConditionValue": 400.0,
-                        "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
+    "workoutSegments": [
+        {
+            "segmentOrder": 1,
+            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
+            "workoutSteps": [
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 1,
+                    "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
+                    "description": "Warmup 10 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 600.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
                     },
-                    {
-                        "type": "ExecutableStepDTO",
-                        "stepOrder": 2,
-                        "stepType": {"stepTypeId": 4, "stepTypeKey": "recovery"},
-                        "description": "Recovery 2 min",
-                        "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                        "endConditionValue": 120.0,
-                        "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-                    }
-                ]
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 3,
-                "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
-                "description": "Cooldown 10 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 600.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            }
-        ]
-    }]
+                },
+                {
+                    "type": "RepeatGroupDTO",
+                    "stepOrder": 2,
+                    "numberOfIterations": 6,
+                    "workoutSteps": [
+                        {
+                            "type": "ExecutableStepDTO",
+                            "stepOrder": 1,
+                            "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                            "description": "Fast 400m",
+                            "endCondition": {
+                                "conditionTypeId": 3,
+                                "conditionTypeKey": "distance",
+                            },
+                            "endConditionValue": 400.0,
+                            "targetType": {
+                                "workoutTargetTypeId": 1,
+                                "workoutTargetTypeKey": "no.target",
+                            },
+                        },
+                        {
+                            "type": "ExecutableStepDTO",
+                            "stepOrder": 2,
+                            "stepType": {"stepTypeId": 4, "stepTypeKey": "recovery"},
+                            "description": "Recovery 2 min",
+                            "endCondition": {
+                                "conditionTypeId": 2,
+                                "conditionTypeKey": "time",
+                            },
+                            "endConditionValue": 120.0,
+                            "targetType": {
+                                "workoutTargetTypeId": 1,
+                                "workoutTargetTypeKey": "no.target",
+                            },
+                        },
+                    ],
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 3,
+                    "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
+                    "description": "Cooldown 10 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 600.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+            ],
+        }
+    ],
 }
 
 TEMPO_RUN_TEMPLATE = {
     "workoutName": "Tempo Run",
     "description": "Tempo workout: warmup, 20min at tempo pace (HR zone 4), cooldown",
     "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-    "workoutSegments": [{
-        "segmentOrder": 1,
-        "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutSteps": [
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
-                "description": "Warmup 10 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 600.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 2,
-                "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                "description": "Tempo 20 min - HR Zone 4",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 1200.0,
-                "targetType": {"workoutTargetTypeId": 4, "workoutTargetTypeKey": "heart.rate.zone"},
-                "zoneNumber": 4
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 3,
-                "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
-                "description": "Cooldown 10 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 600.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            }
-        ]
-    }]
+    "workoutSegments": [
+        {
+            "segmentOrder": 1,
+            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
+            "workoutSteps": [
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 1,
+                    "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
+                    "description": "Warmup 10 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 600.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 2,
+                    "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                    "description": "Tempo 20 min - HR Zone 4",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 1200.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 4,
+                        "workoutTargetTypeKey": "heart.rate.zone",
+                    },
+                    "zoneNumber": 4,
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 3,
+                    "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
+                    "description": "Cooldown 10 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 600.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+            ],
+        }
+    ],
 }
 
 STRENGTH_CIRCUIT_TEMPLATE = {
     "workoutName": "Strength Circuit",
     "description": "Strength training circuit: warmup, 3x circuit (work + rest), cooldown",
     "sportType": {"sportTypeId": 4, "sportTypeKey": "strength_training"},
-    "workoutSegments": [{
-        "segmentOrder": 1,
-        "sportType": {"sportTypeId": 4, "sportTypeKey": "strength_training"},
-        "workoutSteps": [
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
-                "description": "Warmup 5 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 300.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            },
-            {
-                "type": "RepeatGroupDTO",
-                "stepOrder": 2,
-                "numberOfIterations": 3,
-                "workoutSteps": [
-                    {
-                        "type": "ExecutableStepDTO",
-                        "stepOrder": 1,
-                        "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                        "description": "Circuit work 10 min",
-                        "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                        "endConditionValue": 600.0,
-                        "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
+    "workoutSegments": [
+        {
+            "segmentOrder": 1,
+            "sportType": {"sportTypeId": 4, "sportTypeKey": "strength_training"},
+            "workoutSteps": [
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 1,
+                    "stepType": {"stepTypeId": 1, "stepTypeKey": "warmup"},
+                    "description": "Warmup 5 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 300.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
                     },
-                    {
-                        "type": "ExecutableStepDTO",
-                        "stepOrder": 2,
-                        "stepType": {"stepTypeId": 4, "stepTypeKey": "recovery"},
-                        "description": "Rest 2 min",
-                        "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                        "endConditionValue": 120.0,
-                        "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-                    }
-                ]
-            },
-            {
-                "type": "ExecutableStepDTO",
-                "stepOrder": 3,
-                "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
-                "description": "Cooldown stretch 5 min",
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 300.0,
-                "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-            }
-        ]
-    }]
+                },
+                {
+                    "type": "RepeatGroupDTO",
+                    "stepOrder": 2,
+                    "numberOfIterations": 3,
+                    "workoutSteps": [
+                        {
+                            "type": "ExecutableStepDTO",
+                            "stepOrder": 1,
+                            "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                            "description": "Circuit work 10 min",
+                            "endCondition": {
+                                "conditionTypeId": 2,
+                                "conditionTypeKey": "time",
+                            },
+                            "endConditionValue": 600.0,
+                            "targetType": {
+                                "workoutTargetTypeId": 1,
+                                "workoutTargetTypeKey": "no.target",
+                            },
+                        },
+                        {
+                            "type": "ExecutableStepDTO",
+                            "stepOrder": 2,
+                            "stepType": {"stepTypeId": 4, "stepTypeKey": "recovery"},
+                            "description": "Rest 2 min",
+                            "endCondition": {
+                                "conditionTypeId": 2,
+                                "conditionTypeKey": "time",
+                            },
+                            "endConditionValue": 120.0,
+                            "targetType": {
+                                "workoutTargetTypeId": 1,
+                                "workoutTargetTypeKey": "no.target",
+                            },
+                        },
+                    ],
+                },
+                {
+                    "type": "ExecutableStepDTO",
+                    "stepOrder": 3,
+                    "stepType": {"stepTypeId": 2, "stepTypeKey": "cooldown"},
+                    "description": "Cooldown stretch 5 min",
+                    "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
+                    "endConditionValue": 300.0,
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+            ],
+        }
+    ],
 }
 
 # Reference documentation for workout structure
@@ -204,32 +267,38 @@ WORKOUT_STRUCTURE_REFERENCE = {
     "description": "Reference guide for Garmin workout JSON structure",
     "step_types": {
         "ExecutableStepDTO": "Regular workout step (warmup, interval, cooldown, recovery, rest)",
-        "RepeatGroupDTO": "Repeat group containing nested steps with numberOfIterations"
+        "RepeatGroupDTO": "Repeat group containing nested steps with numberOfIterations",
     },
     "stepType_values": {
         "1": {"stepTypeKey": "warmup", "description": "Warmup phase"},
         "2": {"stepTypeKey": "cooldown", "description": "Cooldown phase"},
         "3": {"stepTypeKey": "interval", "description": "Work/effort interval"},
         "4": {"stepTypeKey": "recovery", "description": "Recovery between intervals"},
-        "5": {"stepTypeKey": "rest", "description": "Complete rest"}
+        "5": {"stepTypeKey": "rest", "description": "Complete rest"},
     },
     "endCondition_values": {
         "1": {"conditionTypeKey": "lap.button", "description": "Manual lap press"},
         "2": {"conditionTypeKey": "time", "description": "Duration in seconds"},
-        "3": {"conditionTypeKey": "distance", "description": "Distance in meters"}
+        "3": {"conditionTypeKey": "distance", "description": "Distance in meters"},
     },
     "targetType_values": {
         "1": {"workoutTargetTypeKey": "no.target", "description": "No specific target"},
-        "4": {"workoutTargetTypeKey": "heart.rate.zone", "description": "Heart rate zone (use zoneNumber 1-5)"},
-        "6": {"workoutTargetTypeKey": "pace.zone", "description": "Pace zone (use zoneNumber)"}
+        "4": {
+            "workoutTargetTypeKey": "heart.rate.zone",
+            "description": "Heart rate zone (use zoneNumber 1-5)",
+        },
+        "6": {
+            "workoutTargetTypeKey": "pace.zone",
+            "description": "Pace zone (use zoneNumber)",
+        },
     },
     "sportType_values": {
         "1": {"sportTypeKey": "running"},
         "2": {"sportTypeKey": "cycling"},
         "4": {"sportTypeKey": "strength_training"},
         "5": {"sportTypeKey": "cardio"},
-        "11": {"sportTypeKey": "walking"}
-    }
+        "11": {"sportTypeKey": "walking"},
+    },
 }
 
 

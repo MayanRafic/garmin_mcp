@@ -3,7 +3,6 @@ Debug version of the MCP server for direct testing
 """
 
 import asyncio
-import datetime
 import os
 from pathlib import Path
 
@@ -11,8 +10,9 @@ from dotenv import load_dotenv
 from garminconnect import Garmin
 
 # Load environment variables from .env file
-env_path = Path(__file__).parent / '.env'
+env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
+
 
 # Direct test function
 async def test_direct():
@@ -44,6 +44,7 @@ async def test_direct():
 
     except Exception as e:
         print(f"Error: {str(e)}")
+
 
 if __name__ == "__main__":
     asyncio.run(test_direct())

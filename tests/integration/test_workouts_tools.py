@@ -3,6 +3,7 @@ Integration tests for workouts module MCP tools
 
 Tests workout tools using FastMCP integration with mocked Garmin API responses.
 """
+
 import pytest
 from unittest.mock import Mock
 from mcp.server.fastmcp import FastMCP
@@ -30,10 +31,7 @@ async def test_get_workouts_tool(app_with_workouts, mock_garmin_client):
     mock_garmin_client.get_workouts.return_value = MOCK_WORKOUTS
 
     # Call tool
-    result = await app_with_workouts.call_tool(
-        "get_workouts",
-        {}
-    )
+    result = await app_with_workouts.call_tool("get_workouts", {})
 
     # Verify
     assert result is not None
@@ -51,8 +49,7 @@ async def test_get_workout_by_id_tool(app_with_workouts, mock_garmin_client):
     # Call tool with numeric ID (FastMCP passes numeric strings as int)
     workout_id = 123456
     result = await app_with_workouts.call_tool(
-        "get_workout_by_id",
-        {"workout_id": workout_id}
+        "get_workout_by_id", {"workout_id": workout_id}
     )
 
     # Verify - tool converts to int for numeric IDs
@@ -102,35 +99,43 @@ async def test_get_workout_by_uuid_tool(app_with_workouts, mock_garmin_client):
         "workoutPhrase": "AEROBIC_LOW_SHORTAGE_BASE",
         "trainingEffectLabel": "AEROBIC_BASE",
         "estimatedTrainingEffect": 2.3,
-        "workoutSegments": [{
-            "segmentOrder": 1,
-            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-            "workoutSteps": [{
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 2160.0,
-                "targetType": {"workoutTargetTypeId": 6, "workoutTargetTypeKey": "pace.zone"},
-                "targetValueOne": 2.777,
-                "targetValueTwo": 2.472
-            }]
-        }]
+        "workoutSegments": [
+            {
+                "segmentOrder": 1,
+                "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
+                "workoutSteps": [
+                    {
+                        "type": "ExecutableStepDTO",
+                        "stepOrder": 1,
+                        "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                        "endCondition": {
+                            "conditionTypeId": 2,
+                            "conditionTypeKey": "time",
+                        },
+                        "endConditionValue": 2160.0,
+                        "targetType": {
+                            "workoutTargetTypeId": 6,
+                            "workoutTargetTypeKey": "pace.zone",
+                        },
+                        "targetValueOne": 2.777,
+                        "targetValueTwo": 2.472,
+                    }
+                ],
+            }
+        ],
     }
     mock_garmin_client.garth.get.return_value = mock_response
 
     # Call tool with UUID (contains dashes)
     workout_uuid = "d7a5491b-42a5-4d2d-ba38-4e414fc03caf"
     result = await app_with_workouts.call_tool(
-        "get_workout_by_id",
-        {"workout_id": workout_uuid}
+        "get_workout_by_id", {"workout_id": workout_uuid}
     )
 
     # Verify fbt-adaptive endpoint was called
     assert result is not None
     mock_garmin_client.garth.get.assert_called_once_with(
-        "connectapi",
-        f"workout-service/fbt-adaptive/{workout_uuid}"
+        "connectapi", f"workout-service/fbt-adaptive/{workout_uuid}"
     )
 
     # Parse the result and verify training plan workout fields
@@ -157,15 +162,14 @@ async def test_download_workout_tool(app_with_workouts, mock_garmin_client):
     workout_data = {
         "workoutId": 123456,
         "workoutName": "5K Tempo Run",
-        "data": "...workout file content..."
+        "data": "...workout file content...",
     }
     mock_garmin_client.download_workout.return_value = workout_data
 
     # Call tool
     workout_id = 123456
     result = await app_with_workouts.call_tool(
-        "download_workout",
-        {"workout_id": workout_id}
+        "download_workout", {"workout_id": workout_id}
     )
 
     # Verify
@@ -177,17 +181,13 @@ async def test_download_workout_tool(app_with_workouts, mock_garmin_client):
 async def test_upload_workout_tool(app_with_workouts, mock_garmin_client):
     """Test upload_workout tool uploads new workout"""
     # Setup mock
-    upload_response = {
-        "workoutId": 123457,
-        "workoutName": "New Workout"
-    }
+    upload_response = {"workoutId": 123457, "workoutName": "New Workout"}
     mock_garmin_client.upload_workout.return_value = upload_response
 
     # Call tool - pass dict which is passed directly to API
     workout_data = {"workoutName": "New Workout", "sportType": {"sportTypeId": 1}}
     result = await app_with_workouts.call_tool(
-        "upload_workout",
-        {"workout_data": workout_data}
+        "upload_workout", {"workout_data": workout_data}
     )
 
     # Verify - dict is passed directly to the API
@@ -196,7 +196,9 @@ async def test_upload_workout_tool(app_with_workouts, mock_garmin_client):
 
 
 @pytest.mark.asyncio
-async def test_upload_workout_fixes_hr_zone_target(app_with_workouts, mock_garmin_client):
+async def test_upload_workout_fixes_hr_zone_target(
+    app_with_workouts, mock_garmin_client
+):
     """Test upload_workout converts targetValueOne to zoneNumber for HR zone targets"""
     import json as json_module
 
@@ -207,24 +209,33 @@ async def test_upload_workout_fixes_hr_zone_target(app_with_workouts, mock_garmi
     workout_data = {
         "workoutName": "HR Zone Workout",
         "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutSegments": [{
-            "segmentOrder": 1,
-            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-            "workoutSteps": [{
-                "type": "ExecutableStepDTO",
-                "stepOrder": 1,
-                "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                "endConditionValue": 600,
-                "targetType": {"workoutTargetTypeId": 4, "workoutTargetTypeKey": "heart.rate.zone"},
-                "targetValueOne": 3,
-            }]
-        }]
+        "workoutSegments": [
+            {
+                "segmentOrder": 1,
+                "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
+                "workoutSteps": [
+                    {
+                        "type": "ExecutableStepDTO",
+                        "stepOrder": 1,
+                        "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
+                        "endCondition": {
+                            "conditionTypeId": 2,
+                            "conditionTypeKey": "time",
+                        },
+                        "endConditionValue": 600,
+                        "targetType": {
+                            "workoutTargetTypeId": 4,
+                            "workoutTargetTypeKey": "heart.rate.zone",
+                        },
+                        "targetValueOne": 3,
+                    }
+                ],
+            }
+        ],
     }
 
     result = await app_with_workouts.call_tool(
-        "upload_workout",
-        {"workout_data": workout_data}
+        "upload_workout", {"workout_data": workout_data}
     )
 
     # Verify the data sent to Garmin API was fixed
@@ -239,7 +250,9 @@ async def test_upload_workout_fixes_hr_zone_target(app_with_workouts, mock_garmi
 
 
 @pytest.mark.asyncio
-async def test_upload_workout_fixes_hr_zone_in_repeat_group(app_with_workouts, mock_garmin_client):
+async def test_upload_workout_fixes_hr_zone_in_repeat_group(
+    app_with_workouts, mock_garmin_client
+):
     """Test upload_workout fixes HR zone targets inside RepeatGroupDTO"""
     import json as json_module
 
@@ -249,45 +262,68 @@ async def test_upload_workout_fixes_hr_zone_in_repeat_group(app_with_workouts, m
     workout_data = {
         "workoutName": "Repeat HR Zone",
         "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutSegments": [{
-            "segmentOrder": 1,
-            "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-            "workoutSteps": [{
-                "type": "RepeatGroupDTO",
-                "stepOrder": 1,
-                "numberOfIterations": 2,
+        "workoutSegments": [
+            {
+                "segmentOrder": 1,
+                "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
                 "workoutSteps": [
                     {
-                        "type": "ExecutableStepDTO",
+                        "type": "RepeatGroupDTO",
                         "stepOrder": 1,
-                        "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
-                        "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                        "endConditionValue": 600,
-                        "targetType": {"workoutTargetTypeId": 4, "workoutTargetTypeKey": "heart.rate.zone"},
-                        "targetValueOne": 3,
-                        "targetValueTwo": 3,
-                    },
-                    {
-                        "type": "ExecutableStepDTO",
-                        "stepOrder": 2,
-                        "stepType": {"stepTypeId": 4, "stepTypeKey": "recovery"},
-                        "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
-                        "endConditionValue": 240,
-                        "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"},
+                        "numberOfIterations": 2,
+                        "workoutSteps": [
+                            {
+                                "type": "ExecutableStepDTO",
+                                "stepOrder": 1,
+                                "stepType": {
+                                    "stepTypeId": 3,
+                                    "stepTypeKey": "interval",
+                                },
+                                "endCondition": {
+                                    "conditionTypeId": 2,
+                                    "conditionTypeKey": "time",
+                                },
+                                "endConditionValue": 600,
+                                "targetType": {
+                                    "workoutTargetTypeId": 4,
+                                    "workoutTargetTypeKey": "heart.rate.zone",
+                                },
+                                "targetValueOne": 3,
+                                "targetValueTwo": 3,
+                            },
+                            {
+                                "type": "ExecutableStepDTO",
+                                "stepOrder": 2,
+                                "stepType": {
+                                    "stepTypeId": 4,
+                                    "stepTypeKey": "recovery",
+                                },
+                                "endCondition": {
+                                    "conditionTypeId": 2,
+                                    "conditionTypeKey": "time",
+                                },
+                                "endConditionValue": 240,
+                                "targetType": {
+                                    "workoutTargetTypeId": 1,
+                                    "workoutTargetTypeKey": "no.target",
+                                },
+                            },
+                        ],
                     }
-                ]
-            }]
-        }]
+                ],
+            }
+        ],
     }
 
     result = await app_with_workouts.call_tool(
-        "upload_workout",
-        {"workout_data": workout_data}
+        "upload_workout", {"workout_data": workout_data}
     )
 
     # Verify nested step was fixed
     called_data = mock_garmin_client.upload_workout.call_args[0][0]
-    interval_step = called_data["workoutSegments"][0]["workoutSteps"][0]["workoutSteps"][0]
+    interval_step = called_data["workoutSegments"][0]["workoutSteps"][0][
+        "workoutSteps"
+    ][0]
     assert interval_step["zoneNumber"] == 3
     assert "targetValueOne" not in interval_step
     assert "targetValueTwo" not in interval_step
@@ -314,7 +350,7 @@ async def test_get_scheduled_workouts_tool(app_with_workouts, mock_garmin_client
                     "tpPlanName": "5K Training Plan",
                     "associatedActivityId": None,
                     "estimatedDurationInSecs": 1800,
-                    "estimatedDistanceInMeters": 5000.0
+                    "estimatedDistanceInMeters": 5000.0,
                 }
             ]
         }
@@ -323,8 +359,7 @@ async def test_get_scheduled_workouts_tool(app_with_workouts, mock_garmin_client
 
     # Call tool
     result = await app_with_workouts.call_tool(
-        "get_scheduled_workouts",
-        {"start_date": "2024-01-08", "end_date": "2024-01-15"}
+        "get_scheduled_workouts", {"start_date": "2024-01-08", "end_date": "2024-01-15"}
     )
 
     # Verify curation extracts correct fields
@@ -356,7 +391,7 @@ async def test_get_training_plan_workouts_tool(app_with_workouts, mock_garmin_cl
                         "planName": "5K Training Plan",
                         "trainingPlanDetailsDTO": {
                             "athletePlanId": 12345,
-                            "workoutsPerWeek": 4
+                            "workoutsPerWeek": 4,
                         },
                         "workoutScheduleSummaries": [
                             {
@@ -367,7 +402,7 @@ async def test_get_training_plan_workouts_tool(app_with_workouts, mock_garmin_cl
                                 "scheduleDate": "2024-01-15",
                                 "tpPlanName": "5K Training Plan",
                                 "associatedActivityId": None,
-                                "estimatedDurationInSecs": 1800
+                                "estimatedDurationInSecs": 1800,
                             },
                             {
                                 "workoutUuid": "xyz-456-ghi",
@@ -377,9 +412,9 @@ async def test_get_training_plan_workouts_tool(app_with_workouts, mock_garmin_cl
                                 "scheduleDate": "2024-01-15",
                                 "tpPlanName": "5K Training Plan",
                                 "associatedActivityId": 987654,
-                                "estimatedDurationInSecs": 1200
-                            }
-                        ]
+                                "estimatedDurationInSecs": 1200,
+                            },
+                        ],
                     }
                 ]
             }
@@ -389,8 +424,7 @@ async def test_get_training_plan_workouts_tool(app_with_workouts, mock_garmin_cl
 
     # Call tool
     result = await app_with_workouts.call_tool(
-        "get_training_plan_workouts",
-        {"calendar_date": "2024-01-15"}
+        "get_training_plan_workouts", {"calendar_date": "2024-01-15"}
     )
 
     # Verify
@@ -430,8 +464,7 @@ async def test_delete_workout_success_204(app_with_workouts, mock_garmin_client)
     # Call tool
     workout_id = 123456
     result = await app_with_workouts.call_tool(
-        "delete_workout",
-        {"workout_id": workout_id}
+        "delete_workout", {"workout_id": workout_id}
     )
 
     # Verify
@@ -456,8 +489,7 @@ async def test_delete_workout_success_200(app_with_workouts, mock_garmin_client)
     # Call tool
     workout_id = 789012
     result = await app_with_workouts.call_tool(
-        "delete_workout",
-        {"workout_id": workout_id}
+        "delete_workout", {"workout_id": workout_id}
     )
 
     # Verify
@@ -481,8 +513,7 @@ async def test_delete_workout_failure(app_with_workouts, mock_garmin_client):
     # Call tool
     workout_id = 999999
     result = await app_with_workouts.call_tool(
-        "delete_workout",
-        {"workout_id": workout_id}
+        "delete_workout", {"workout_id": workout_id}
     )
 
     # Verify
@@ -500,10 +531,7 @@ async def test_delete_workout_exception(app_with_workouts, mock_garmin_client):
     mock_garmin_client.garth.delete.side_effect = Exception("Network error")
 
     # Call tool
-    result = await app_with_workouts.call_tool(
-        "delete_workout",
-        {"workout_id": 123456}
-    )
+    result = await app_with_workouts.call_tool("delete_workout", {"workout_id": 123456})
 
     # Verify error is handled gracefully
     assert result is not None
@@ -518,10 +546,7 @@ async def test_get_workouts_no_data(app_with_workouts, mock_garmin_client):
     mock_garmin_client.get_workouts.return_value = None
 
     # Call tool
-    result = await app_with_workouts.call_tool(
-        "get_workouts",
-        {}
-    )
+    result = await app_with_workouts.call_tool("get_workouts", {})
 
     # Verify error message is returned
     assert result is not None
@@ -534,10 +559,7 @@ async def test_upload_workout_exception(app_with_workouts, mock_garmin_client):
     mock_garmin_client.upload_workout.side_effect = Exception("Upload failed")
 
     # Call tool with valid workout data
-    result = await app_with_workouts.call_tool(
-        "upload_workout",
-        {"workout_data": {}}
-    )
+    result = await app_with_workouts.call_tool("upload_workout", {"workout_data": {}})
 
     # Verify error is handled gracefully
     assert result is not None

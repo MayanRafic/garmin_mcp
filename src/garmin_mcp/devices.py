@@ -4,7 +4,7 @@ Device-related functions for Garmin Connect MCP Server
 
 import json
 import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Union
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -192,7 +192,9 @@ def register_tools(app):
                         "device_id": device.get("deviceId"),
                         "display_name": device.get("displayName"),
                         "is_primary_wearable": device.get("primaryWearableDevice"),
-                        "primary_training_capable": device.get("primaryTrainingCapable"),
+                        "primary_training_capable": device.get(
+                            "primaryTrainingCapable"
+                        ),
                     }
                     if device.get("imageUrl"):
                         device_info["image_url"] = device.get("imageUrl")

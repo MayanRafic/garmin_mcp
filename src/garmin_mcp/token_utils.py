@@ -160,5 +160,5 @@ def get_token_info(token_path: str = None, is_cn: bool = False) -> dict:
         "expanded_path": os.path.expanduser(token_path),
         "exists": exists,
         "valid": is_valid,
-        "error": error_msg
+        "error": error_msg,
     }

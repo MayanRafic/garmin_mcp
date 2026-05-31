@@ -4,7 +4,6 @@ Challenges and badges functions for Garmin Connect MCP Server
 
 import json
 import datetime
-from typing import Any, Dict, List, Optional, Union
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -176,7 +175,9 @@ def _curate_badge_challenge(challenge: dict) -> dict:
     curated = {
         "name": challenge.get("badgeChallengeName"),
         "uuid": challenge.get("uuid"),
-        "category": CHALLENGE_CATEGORY_MAPPING.get(category_id, f"category_{category_id}"),
+        "category": CHALLENGE_CATEGORY_MAPPING.get(
+            category_id, f"category_{category_id}"
+        ),
         "status": CHALLENGE_STATUS_MAPPING.get(status_id, f"status_{status_id}"),
         "points": challenge.get("badgePoints"),
         "start_date": _parse_iso_date(challenge.get("startDate")),
@@ -378,7 +379,9 @@ def register_tools(app):
                     "activity_type": ADHOC_ACTIVITY_TYPE_MAPPING.get(
                         activity_type_id, f"type_{activity_type_id}"
                     ),
-                    "status": CHALLENGE_STATUS_MAPPING.get(status_id, f"status_{status_id}"),
+                    "status": CHALLENGE_STATUS_MAPPING.get(
+                        status_id, f"status_{status_id}"
+                    ),
                     "start_date": _parse_iso_date(challenge.get("startDate")),
                     "end_date": _parse_iso_date(challenge.get("endDate")),
                     "your_ranking": challenge.get("userRanking"),
@@ -411,7 +414,9 @@ def register_tools(app):
             limit: Maximum number of challenges to return (default 20, max 100)
         """
         try:
-            challenges = garmin_client.get_available_badge_challenges(start, min(limit, 100))
+            challenges = garmin_client.get_available_badge_challenges(
+                start, min(limit, 100)
+            )
             if not challenges:
                 return "No available badge challenges found."
 

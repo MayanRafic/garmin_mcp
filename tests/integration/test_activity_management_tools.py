@@ -3,8 +3,8 @@ Integration tests for activity_management module MCP tools
 
 Tests all 10 activity management tools using FastMCP integration with mocked Garmin API responses.
 """
+
 import pytest
-from unittest.mock import Mock
 from mcp.server.fastmcp import FastMCP
 
 from garmin_mcp import activity_management
@@ -27,24 +27,29 @@ def app_with_activity_management(mock_garmin_client):
 
 
 @pytest.mark.asyncio
-async def test_get_activities_by_date_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activities_by_date_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activities_by_date tool returns activities in date range"""
     # Setup mock
     mock_garmin_client.get_activities_by_date.return_value = MOCK_ACTIVITIES
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activities_by_date",
-        {"start_date": "2024-01-08", "end_date": "2024-01-15"}
+        "get_activities_by_date", {"start_date": "2024-01-08", "end_date": "2024-01-15"}
     )
 
     # Verify
     assert result is not None
-    mock_garmin_client.get_activities_by_date.assert_called_once_with("2024-01-08", "2024-01-15", "")
+    mock_garmin_client.get_activities_by_date.assert_called_once_with(
+        "2024-01-08", "2024-01-15", ""
+    )
 
 
 @pytest.mark.asyncio
-async def test_get_activities_by_date_with_type(app_with_activity_management, mock_garmin_client):
+async def test_get_activities_by_date_with_type(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activities_by_date tool with activity type filter"""
     # Setup mock
     filtered_activities = [MOCK_ACTIVITIES[0]]  # Only running activities
@@ -53,7 +58,11 @@ async def test_get_activities_by_date_with_type(app_with_activity_management, mo
     # Call tool
     result = await app_with_activity_management.call_tool(
         "get_activities_by_date",
-        {"start_date": "2024-01-08", "end_date": "2024-01-15", "activity_type": "running"}
+        {
+            "start_date": "2024-01-08",
+            "end_date": "2024-01-15",
+            "activity_type": "running",
+        },
     )
 
     # Verify
@@ -64,15 +73,16 @@ async def test_get_activities_by_date_with_type(app_with_activity_management, mo
 
 
 @pytest.mark.asyncio
-async def test_get_activities_fordate_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activities_fordate_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activities_fordate tool returns activities for specific date"""
     # Setup mock
     mock_garmin_client.get_activities_fordate.return_value = [MOCK_ACTIVITIES[0]]
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activities_fordate",
-        {"date": "2024-01-15"}
+        "get_activities_fordate", {"date": "2024-01-15"}
     )
 
     # Verify
@@ -89,8 +99,7 @@ async def test_get_activity_tool(app_with_activity_management, mock_garmin_clien
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity",
-        {"activity_id": activity_id}
+        "get_activity", {"activity_id": activity_id}
     )
 
     # Verify
@@ -99,7 +108,9 @@ async def test_get_activity_tool(app_with_activity_management, mock_garmin_clien
 
 
 @pytest.mark.asyncio
-async def test_get_activity_splits_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_splits_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_splits tool returns activity splits"""
     # Setup mock
     mock_garmin_client.get_activity_splits.return_value = MOCK_ACTIVITY_SPLITS
@@ -107,8 +118,7 @@ async def test_get_activity_splits_tool(app_with_activity_management, mock_garmi
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_splits",
-        {"activity_id": activity_id}
+        "get_activity_splits", {"activity_id": activity_id}
     )
 
     # Verify
@@ -117,7 +127,9 @@ async def test_get_activity_splits_tool(app_with_activity_management, mock_garmi
 
 
 @pytest.mark.asyncio
-async def test_get_activity_splits_elevation_fields(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_splits_elevation_fields(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_splits tool includes elevation gain and loss"""
     import json
 
@@ -127,8 +139,7 @@ async def test_get_activity_splits_elevation_fields(app_with_activity_management
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_splits",
-        {"activity_id": activity_id}
+        "get_activity_splits", {"activity_id": activity_id}
     )
 
     # Parse and verify elevation fields
@@ -146,20 +157,18 @@ async def test_get_activity_splits_elevation_fields(app_with_activity_management
 
 
 @pytest.mark.asyncio
-async def test_get_activity_typed_splits_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_typed_splits_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_typed_splits tool returns typed splits"""
     # Setup mock
-    typed_splits = {
-        "runSplits": MOCK_ACTIVITY_SPLITS["lapDTOs"],
-        "swimSplits": []
-    }
+    typed_splits = {"runSplits": MOCK_ACTIVITY_SPLITS["lapDTOs"], "swimSplits": []}
     mock_garmin_client.get_activity_typed_splits.return_value = typed_splits
 
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_typed_splits",
-        {"activity_id": activity_id}
+        "get_activity_typed_splits", {"activity_id": activity_id}
     )
 
     # Verify
@@ -168,22 +177,23 @@ async def test_get_activity_typed_splits_tool(app_with_activity_management, mock
 
 
 @pytest.mark.asyncio
-async def test_get_activity_split_summaries_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_split_summaries_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_split_summaries tool returns split summaries"""
     # Setup mock
     split_summaries = {
         "totalDistance": 5000.0,
         "totalDuration": 1800.0,
         "avgSpeed": 2.78,
-        "avgHR": 145
+        "avgHR": 145,
     }
     mock_garmin_client.get_activity_split_summaries.return_value = split_summaries
 
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_split_summaries",
-        {"activity_id": activity_id}
+        "get_activity_split_summaries", {"activity_id": activity_id}
     )
 
     # Verify
@@ -192,7 +202,9 @@ async def test_get_activity_split_summaries_tool(app_with_activity_management, m
 
 
 @pytest.mark.asyncio
-async def test_get_activity_weather_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_weather_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_weather tool returns weather data"""
     # Setup mock
     weather_data = {
@@ -203,15 +215,14 @@ async def test_get_activity_weather_tool(app_with_activity_management, mock_garm
         "windSpeed": 5.0,
         "windDirection": 180,
         "latitude": 40.7128,
-        "longitude": -74.0060
+        "longitude": -74.0060,
     }
     mock_garmin_client.get_activity_weather.return_value = weather_data
 
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_weather",
-        {"activity_id": activity_id}
+        "get_activity_weather", {"activity_id": activity_id}
     )
 
     # Verify
@@ -220,14 +231,16 @@ async def test_get_activity_weather_tool(app_with_activity_management, mock_garm
 
 
 @pytest.mark.asyncio
-async def test_get_activity_hr_in_timezones_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_hr_in_timezones_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_hr_in_timezones tool returns HR zone data"""
     # Setup mock
     hr_zones = {
         "zones": [
             {"zone": 1, "timeInZone": 300, "percentageInZone": 16.7},
             {"zone": 2, "timeInZone": 600, "percentageInZone": 33.3},
-            {"zone": 3, "timeInZone": 900, "percentageInZone": 50.0}
+            {"zone": 3, "timeInZone": 900, "percentageInZone": 50.0},
         ]
     }
     mock_garmin_client.get_activity_hr_in_timezones.return_value = hr_zones
@@ -235,8 +248,7 @@ async def test_get_activity_hr_in_timezones_tool(app_with_activity_management, m
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_hr_in_timezones",
-        {"activity_id": activity_id}
+        "get_activity_hr_in_timezones", {"activity_id": activity_id}
     )
 
     # Verify
@@ -251,15 +263,14 @@ async def test_get_activity_gear_tool(app_with_activity_management, mock_garmin_
     gear_data = {
         "gearId": 123,
         "displayName": "Running Shoes - Nike",
-        "gearTypeName": "SHOE"
+        "gearTypeName": "SHOE",
     }
     mock_garmin_client.get_activity_gear.return_value = gear_data
 
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_gear",
-        {"activity_id": activity_id}
+        "get_activity_gear", {"activity_id": activity_id}
     )
 
     # Verify
@@ -268,7 +279,9 @@ async def test_get_activity_gear_tool(app_with_activity_management, mock_garmin_
 
 
 @pytest.mark.asyncio
-async def test_get_activity_exercise_sets_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_exercise_sets_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_exercise_sets tool returns exercise sets for strength training"""
     # Setup mock
     exercise_sets = {
@@ -278,8 +291,8 @@ async def test_get_activity_exercise_sets_tool(app_with_activity_management, moc
                 "sets": [
                     {"setNumber": 1, "weight": 80.0, "reps": 10},
                     {"setNumber": 2, "weight": 80.0, "reps": 8},
-                    {"setNumber": 3, "weight": 80.0, "reps": 6}
-                ]
+                    {"setNumber": 3, "weight": 80.0, "reps": 6},
+                ],
             }
         ]
     }
@@ -288,8 +301,7 @@ async def test_get_activity_exercise_sets_tool(app_with_activity_management, moc
     # Call tool
     activity_id = 12345678901
     result = await app_with_activity_management.call_tool(
-        "get_activity_exercise_sets",
-        {"activity_id": activity_id}
+        "get_activity_exercise_sets", {"activity_id": activity_id}
     )
 
     # Verify
@@ -304,10 +316,7 @@ async def test_count_activities_tool(app_with_activity_management, mock_garmin_c
     mock_garmin_client.count_activities.return_value = MOCK_ACTIVITY_COUNT
 
     # Call tool
-    result = await app_with_activity_management.call_tool(
-        "count_activities",
-        {}
-    )
+    result = await app_with_activity_management.call_tool("count_activities", {})
 
     # Verify
     assert result is not None
@@ -322,8 +331,7 @@ async def test_get_activities_tool(app_with_activity_management, mock_garmin_cli
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activities",
-        {"start": 0, "limit": 20}
+        "get_activities", {"start": 0, "limit": 20}
     )
 
     # Verify
@@ -332,16 +340,15 @@ async def test_get_activities_tool(app_with_activity_management, mock_garmin_cli
 
 
 @pytest.mark.asyncio
-async def test_get_activity_types_tool(app_with_activity_management, mock_garmin_client):
+async def test_get_activity_types_tool(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activity_types tool returns available activity types"""
     # Setup mock
     mock_garmin_client.get_activity_types.return_value = MOCK_ACTIVITY_TYPES
 
     # Call tool
-    result = await app_with_activity_management.call_tool(
-        "get_activity_types",
-        {}
-    )
+    result = await app_with_activity_management.call_tool("get_activity_types", {})
 
     # Verify
     assert result is not None
@@ -350,15 +357,16 @@ async def test_get_activity_types_tool(app_with_activity_management, mock_garmin
 
 # Error handling tests
 @pytest.mark.asyncio
-async def test_get_activities_by_date_no_data(app_with_activity_management, mock_garmin_client):
+async def test_get_activities_by_date_no_data(
+    app_with_activity_management, mock_garmin_client
+):
     """Test get_activities_by_date tool when no activities found"""
     # Setup mock to return empty list
     mock_garmin_client.get_activities_by_date.return_value = []
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activities_by_date",
-        {"start_date": "2024-01-08", "end_date": "2024-01-15"}
+        "get_activities_by_date", {"start_date": "2024-01-08", "end_date": "2024-01-15"}
     )
 
     # Verify error message is returned
@@ -374,8 +382,7 @@ async def test_get_activity_exception(app_with_activity_management, mock_garmin_
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activity",
-        {"activity_id": 12345678901}
+        "get_activity", {"activity_id": 12345678901}
     )
 
     # Verify error is handled gracefully
@@ -391,8 +398,7 @@ async def test_get_activity_not_found(app_with_activity_management, mock_garmin_
 
     # Call tool
     result = await app_with_activity_management.call_tool(
-        "get_activity",
-        {"activity_id": 99999999999}
+        "get_activity", {"activity_id": 99999999999}
     )
 
     # Verify helpful message is returned

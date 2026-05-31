@@ -18,7 +18,7 @@ MOCK_ACTIVITIES = [
         "maxHR": 165,
         "calories": 350,
         "averageSpeed": 2.78,
-        "maxSpeed": 3.5
+        "maxSpeed": 3.5,
     },
     {
         "activityId": 12345678902,
@@ -29,8 +29,8 @@ MOCK_ACTIVITIES = [
         "duration": 3600.0,
         "averageHR": 130,
         "maxHR": 155,
-        "calories": 600
-    }
+        "calories": 600,
+    },
 ]
 
 MOCK_ACTIVITY_DETAILS = {
@@ -47,11 +47,9 @@ MOCK_ACTIVITY_DETAILS = {
         "totalDistance": 5000.0,
         "totalCalories": 350,
         "avgHR": 145,
-        "maxHR": 165
+        "maxHR": 165,
     },
-    "metadataDTO": {
-        "deviceName": "Garmin Forerunner 945"
-    }
+    "metadataDTO": {"deviceName": "Garmin Forerunner 945"},
 }
 
 MOCK_ACTIVITY_SPLITS = {
@@ -63,7 +61,7 @@ MOCK_ACTIVITY_SPLITS = {
             "averageHR": 142,
             "averageSpeed": 2.78,
             "elevationGain": 25.5,
-            "elevationLoss": 10.2
+            "elevationLoss": 10.2,
         },
         {
             "lapIndex": 2,
@@ -72,8 +70,8 @@ MOCK_ACTIVITY_SPLITS = {
             "averageHR": 145,
             "averageSpeed": 2.86,
             "elevationGain": 15.0,
-            "elevationLoss": 30.8
-        }
+            "elevationLoss": 30.8,
+        },
     ]
 }
 
@@ -90,7 +88,7 @@ MOCK_STATS = {
     "wellnessActiveKilocalories": 800,
     "averageStressLevel": 25,
     "maxStressLevel": 60,
-    "restingHeartRate": 55
+    "restingHeartRate": 55,
 }
 
 MOCK_USER_SUMMARY = {
@@ -104,7 +102,7 @@ MOCK_USER_SUMMARY = {
     "restingHeartRate": 55,
     "moderateIntensityMinutes": 45,
     "vigorousIntensityMinutes": 15,
-    "intensityMinutesGoal": 150
+    "intensityMinutesGoal": 150,
 }
 
 MOCK_BODY_COMPOSITION = {
@@ -114,7 +112,7 @@ MOCK_BODY_COMPOSITION = {
     "bodyFat": 15.0,
     "bodyWater": 60.0,
     "boneMass": 3.2,
-    "muscleMass": 32.5
+    "muscleMass": 32.5,
 }
 
 MOCK_STEPS_DATA = {
@@ -127,21 +125,13 @@ MOCK_STEPS_DATA = {
         {"timestampGMT": 1705276800000, "steps": 2000},
         {"timestampGMT": 1705280400000, "steps": 5000},
         {"timestampGMT": 1705284000000, "steps": 8000},
-        {"timestampGMT": 1705287600000, "steps": 10000}
-    ]
+        {"timestampGMT": 1705287600000, "steps": 10000},
+    ],
 }
 
 MOCK_DAILY_STEPS = [
-    {
-        "calendarDate": "2024-01-15",
-        "steps": 10000,
-        "dailyStepGoal": 8000
-    },
-    {
-        "calendarDate": "2024-01-14",
-        "steps": 9500,
-        "dailyStepGoal": 8000
-    }
+    {"calendarDate": "2024-01-15", "steps": 10000, "dailyStepGoal": 8000},
+    {"calendarDate": "2024-01-14", "steps": 9500, "dailyStepGoal": 8000},
 ]
 
 MOCK_TRAINING_READINESS = {
@@ -151,7 +141,7 @@ MOCK_TRAINING_READINESS = {
     "hrvStatus": "BALANCED",
     "bodyBatteryLevel": 75,
     "restingHeartRate": 55,
-    "recentExerciseLoad": 250
+    "recentExerciseLoad": 250,
 }
 
 MOCK_BODY_BATTERY = [
@@ -164,8 +154,8 @@ MOCK_BODY_BATTERY = [
         "bodyBatteryValuesList": [
             {"timestampGMT": 1705276800000, "value": 100},
             {"timestampGMT": 1705280400000, "value": 90},
-            {"timestampGMT": 1705284000000, "value": 80}
-        ]
+            {"timestampGMT": 1705284000000, "value": 80},
+        ],
     }
 ]
 
@@ -175,14 +165,14 @@ MOCK_BODY_BATTERY_EVENTS = {
             "startTimeGMT": 1705276800000,
             "endTimeGMT": 1705280400000,
             "type": "STRESS",
-            "impact": -10
+            "impact": -10,
         },
         {
             "startTimeGMT": 1705280400000,
             "endTimeGMT": 1705284000000,
             "type": "ACTIVITY",
-            "impact": -15
-        }
+            "impact": -15,
+        },
     ]
 }
 
@@ -191,7 +181,7 @@ MOCK_BLOOD_PRESSURE = [
         "measurementTimeStamp": 1705276800000,
         "systolic": 120,
         "diastolic": 80,
-        "pulse": 65
+        "pulse": 65,
     }
 ]
 
@@ -202,8 +192,8 @@ MOCK_FLOORS = {
     "floorsList": [
         {"timestampGMT": 1705276800000, "floors": 3},
         {"timestampGMT": 1705280400000, "floors": 5},
-        {"timestampGMT": 1705284000000, "floors": 7}
-    ]
+        {"timestampGMT": 1705284000000, "floors": 7},
+    ],
 }
 
 MOCK_TRAINING_STATUS = {
@@ -215,14 +205,14 @@ MOCK_TRAINING_STATUS = {
     "vo2MaxPrecisionIndex": 1.0,
     "fitnessAge": 25,
     "lactateThresholdHeartRate": 165,
-    "lactateThresholdSpeed": 3.5
+    "lactateThresholdSpeed": 3.5,
 }
 
 MOCK_RHR_DAY = {
     "calendarDate": "2024-01-15",
     "restingHeartRate": 55,
     "lastSevenDaysAvgRestingHeartRate": 57,
-    "lastNightAvgRestingHeartRate": 53
+    "lastNightAvgRestingHeartRate": 53,
 }
 
 MOCK_HEART_RATES = {
@@ -230,18 +220,10 @@ MOCK_HEART_RATES = {
     "maxHeartRate": 180,
     "minHeartRate": 45,
     "lastSevenDaysAvgRestingHeartRate": 57,
-    "heartRateValues": [
-        [1705276800000, 55],
-        [1705280400000, 65],
-        [1705284000000, 75]
-    ]
+    "heartRateValues": [[1705276800000, 55], [1705280400000, 65], [1705284000000, 75]],
 }
 
-MOCK_HYDRATION_DATA = {
-    "valueInML": 2000,
-    "goalInML": 2500,
-    "sweatLossInML": 500
-}
+MOCK_HYDRATION_DATA = {"valueInML": 2000, "goalInML": 2500, "sweatLossInML": 500}
 
 MOCK_SLEEP_DATA = {
     "dailySleepDTO": {
@@ -257,10 +239,7 @@ MOCK_SLEEP_DATA = {
         "remSleepSeconds": 7200,
         "awakeSleepSeconds": 0,
         "awakeCount": 2,
-        "sleepStress": {
-            "avgSleepStress": 15,
-            "maxSleepStress": 25
-        },
+        "sleepStress": {"avgSleepStress": 15, "maxSleepStress": 25},
         "avgSleepStress": 15,
         "restingHeartRate": 55,
         "restlessMomentsCount": 15,
@@ -269,24 +248,20 @@ MOCK_SLEEP_DATA = {
                 "value": 85,
                 "qualifierKey": "GOOD",
                 "optimalStart": 75,
-                "optimalEnd": 100
+                "optimalEnd": 100,
             },
-            "qualityScore": {
-                "value": 80
-            },
-            "durationScore": {
-                "value": 90
-            }
-        }
+            "qualityScore": {"value": 80},
+            "durationScore": {"value": 90},
+        },
     },
     "wellnessSpO2SleepSummaryDTO": {
         "calendarDate": "2024-01-15",
         "averageSpo2": 96,
         "lowestSpo2": 93,
-        "highestSpo2": 98
+        "highestSpo2": 98,
     },
     "avgOvernightHrv": 45,
-    "sleepMovement": []
+    "sleepMovement": [],
 }
 
 MOCK_STRESS_DATA = {
@@ -297,13 +272,13 @@ MOCK_STRESS_DATA = {
     "stressValueDescriptorList": [
         {"key": "LOW", "index": 0},
         {"key": "MEDIUM", "index": 1},
-        {"key": "HIGH", "index": 2}
+        {"key": "HIGH", "index": 2},
     ],
     "stressValuesArray": [
         [1705276800000, 20],
         [1705280400000, 30],
-        [1705284000000, 25]
-    ]
+        [1705284000000, 25],
+    ],
 }
 
 MOCK_RESPIRATION_DATA = {
@@ -311,7 +286,7 @@ MOCK_RESPIRATION_DATA = {
     "avgRespirationRate": 14.5,
     "maxRespirationRate": 18,
     "minRespirationRate": 12,
-    "sleepAvgRespirationRate": 13.0
+    "sleepAvgRespirationRate": 13.0,
 }
 
 MOCK_SPO2_DATA = {
@@ -319,11 +294,7 @@ MOCK_SPO2_DATA = {
     "averageSpo2": 96,
     "lowestSpo2": 93,
     "highestSpo2": 98,
-    "spo2Values": [
-        [1705276800000, 96],
-        [1705280400000, 95],
-        [1705284000000, 97]
-    ]
+    "spo2Values": [[1705276800000, 96], [1705280400000, 95], [1705284000000, 97]],
 }
 
 MOCK_LIFESTYLE_LOGGING_DATA = {
@@ -333,26 +304,21 @@ MOCK_LIFESTYLE_LOGGING_DATA = {
             "type": "caffeine_consumption",
             "value": "2 cups",
             "timestamp": "2024-01-15T08:00:00",
-            "notes": "Morning coffee"
+            "notes": "Morning coffee",
         },
         {
             "type": "alcohol_consumption",
             "value": "1 glass",
             "timestamp": "2024-01-15T20:00:00",
-            "notes": "Red wine"
-        }
-    ]
+            "notes": "Red wine",
+        },
+    ],
 }
 
 # Challenges
 MOCK_GOALS = {
     "goals": [
-        {
-            "goalType": "STEPS",
-            "goalValue": 8000,
-            "currentValue": 10000,
-            "progress": 125
-        }
+        {"goalType": "STEPS", "goalValue": 8000, "currentValue": 10000, "progress": 125}
     ]
 }
 
@@ -361,7 +327,7 @@ MOCK_PERSONAL_RECORD = {
         {
             "recordType": "FASTEST_5K",
             "recordValue": 1200.0,  # 20 minutes
-            "recordDate": "2024-01-15"
+            "recordDate": "2024-01-15",
         }
     ]
 }
@@ -371,7 +337,7 @@ MOCK_BADGES = [
         "badgeId": 1,
         "badgeName": "10K Steps - 7 Days",
         "badgeDescription": "Achieved 10,000 steps for 7 consecutive days",
-        "earnedDate": "2024-01-15"
+        "earnedDate": "2024-01-15",
     }
 ]
 
@@ -383,7 +349,7 @@ MOCK_DEVICES = [
         "productNumber": "006-B3069-00",
         "softwareVersion": "15.50",
         "batteryStatus": "GOOD",
-        "deviceStatus": "ACTIVE"
+        "deviceStatus": "ACTIVE",
     }
 ]
 
@@ -393,7 +359,7 @@ MOCK_DEVICE_SETTINGS = {
     "activityTrackingOn": True,
     "autoGoalEnabled": True,
     "backlightMode": "AUTO",
-    "timeFormat": "24_HOUR"
+    "timeFormat": "24_HOUR",
 }
 
 MOCK_DEVICE_LAST_USED = {
@@ -467,7 +433,7 @@ MOCK_USER_PROFILE = {
     "height": 175.0,  # cm
     "weight": 70.0,  # kg
     "vo2Max": 52.5,
-    "fitnessAge": 25
+    "fitnessAge": 25,
 }
 
 MOCK_UNIT_SYSTEM = {
@@ -475,7 +441,7 @@ MOCK_UNIT_SYSTEM = {
     "distanceUnit": "KILOMETER",
     "weightUnit": "KILOGRAM",
     "temperatureUnit": "CELSIUS",
-    "elevationUnit": "METER"
+    "elevationUnit": "METER",
 }
 
 # Gear - matches actual Garmin API structure
@@ -537,7 +503,7 @@ MOCK_PROGRESS_SUMMARY = {
     "aerobicEffect": 3.5,
     "anaerobicEffect": 2.0,
     "totalDuration": 360000,  # seconds
-    "totalDistance": 50000  # meters
+    "totalDistance": 50000,  # meters
 }
 
 MOCK_HRV_DATA = {
@@ -558,9 +524,21 @@ MOCK_HRV_DATA = {
         "createTimeStamp": "2024-01-15T07:30:00.000",
     },
     "hrvReadings": [
-        {"hrvValue": 45, "readingTimeGMT": "2024-01-15T00:15:00.0", "readingTimeLocal": "2024-01-15T00:15:00.0"},
-        {"hrvValue": 48, "readingTimeGMT": "2024-01-15T00:20:00.0", "readingTimeLocal": "2024-01-15T00:20:00.0"},
-        {"hrvValue": 52, "readingTimeGMT": "2024-01-15T00:25:00.0", "readingTimeLocal": "2024-01-15T00:25:00.0"},
+        {
+            "hrvValue": 45,
+            "readingTimeGMT": "2024-01-15T00:15:00.0",
+            "readingTimeLocal": "2024-01-15T00:15:00.0",
+        },
+        {
+            "hrvValue": 48,
+            "readingTimeGMT": "2024-01-15T00:20:00.0",
+            "readingTimeLocal": "2024-01-15T00:20:00.0",
+        },
+        {
+            "hrvValue": 52,
+            "readingTimeGMT": "2024-01-15T00:25:00.0",
+            "readingTimeLocal": "2024-01-15T00:25:00.0",
+        },
     ],
     "sleepStartTimestampLocal": "2024-01-15T00:10:00.0",
     "sleepEndTimestampLocal": "2024-01-15T07:30:00.0",
@@ -572,7 +550,7 @@ MOCK_WORKOUTS = [
         "workoutId": 123456,
         "workoutName": "5K Tempo Run",
         "sportType": {"sportTypeId": 1, "sportTypeKey": "running"},
-        "workoutProvider": "GARMIN_COACH"
+        "workoutProvider": "GARMIN_COACH",
     }
 ]
 
@@ -597,17 +575,26 @@ MOCK_WORKOUT_DETAILS = {
                     "description": "Easy warm up run",
                     "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
                     "endConditionValue": 600.0,
-                    "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
                 },
                 {
                     "stepId": 1002,
                     "stepOrder": 2,
                     "stepType": {"stepTypeId": 3, "stepTypeKey": "interval"},
                     "description": "Tempo pace",
-                    "endCondition": {"conditionTypeId": 3, "conditionTypeKey": "distance"},
+                    "endCondition": {
+                        "conditionTypeId": 3,
+                        "conditionTypeKey": "distance",
+                    },
                     "endConditionValue": 5000.0,
-                    "targetType": {"workoutTargetTypeId": 6, "workoutTargetTypeKey": "pace.zone"},
-                    "zoneNumber": 4
+                    "targetType": {
+                        "workoutTargetTypeId": 6,
+                        "workoutTargetTypeKey": "pace.zone",
+                    },
+                    "zoneNumber": 4,
                 },
                 {
                     "stepId": 1003,
@@ -616,11 +603,14 @@ MOCK_WORKOUT_DETAILS = {
                     "description": "Cool down jog",
                     "endCondition": {"conditionTypeId": 2, "conditionTypeKey": "time"},
                     "endConditionValue": 300.0,
-                    "targetType": {"workoutTargetTypeId": 1, "workoutTargetTypeKey": "no.target"}
-                }
-            ]
+                    "targetType": {
+                        "workoutTargetTypeId": 1,
+                        "workoutTargetTypeKey": "no.target",
+                    },
+                },
+            ],
         }
-    ]
+    ],
 }
 
 # Women's Health
@@ -628,7 +618,7 @@ MOCK_MENSTRUAL_DATA = {
     "calendarDate": "2024-01-15",
     "cycleDay": 15,
     "phase": "FOLLICULAR",
-    "symptoms": []
+    "symptoms": [],
 }
 
 # Weekly Health Metrics - APIs return lists of weekly aggregates
@@ -797,16 +787,58 @@ MOCK_LACTATE_THRESHOLD = {
 # Response format for latest=False (date range)
 MOCK_LACTATE_THRESHOLD_RANGE = {
     "speed": [
-        {"from": "2024-01-08", "until": "2024-01-08", "series": "running", "value": 0.29444, "updatedDate": "2024-01-08"},
-        {"from": "2024-01-12", "until": "2024-01-12", "series": "running", "value": 0.30555, "updatedDate": "2024-01-12"},
-        {"from": "2024-01-15", "until": "2024-01-15", "series": "running", "value": 0.31666, "updatedDate": "2024-01-15"},
+        {
+            "from": "2024-01-08",
+            "until": "2024-01-08",
+            "series": "running",
+            "value": 0.29444,
+            "updatedDate": "2024-01-08",
+        },
+        {
+            "from": "2024-01-12",
+            "until": "2024-01-12",
+            "series": "running",
+            "value": 0.30555,
+            "updatedDate": "2024-01-12",
+        },
+        {
+            "from": "2024-01-15",
+            "until": "2024-01-15",
+            "series": "running",
+            "value": 0.31666,
+            "updatedDate": "2024-01-15",
+        },
     ],
     "heartRate": [
-        {"from": "2024-01-08", "until": "2024-01-08", "series": "running", "value": 165, "updatedDate": "2024-01-08"},
-        {"from": "2024-01-12", "until": "2024-01-12", "series": "running", "value": 167, "updatedDate": "2024-01-12"},
-        {"from": "2024-01-15", "until": "2024-01-15", "series": "running", "value": 169, "updatedDate": "2024-01-15"},
+        {
+            "from": "2024-01-08",
+            "until": "2024-01-08",
+            "series": "running",
+            "value": 165,
+            "updatedDate": "2024-01-08",
+        },
+        {
+            "from": "2024-01-12",
+            "until": "2024-01-12",
+            "series": "running",
+            "value": 167,
+            "updatedDate": "2024-01-12",
+        },
+        {
+            "from": "2024-01-15",
+            "until": "2024-01-15",
+            "series": "running",
+            "value": 169,
+            "updatedDate": "2024-01-15",
+        },
     ],
     "power": [
-        {"from": "2024-01-15", "until": "2024-01-15", "series": "running", "value": 334.0, "updatedDate": "2024-01-15"},
+        {
+            "from": "2024-01-15",
+            "until": "2024-01-15",
+            "series": "running",
+            "value": 334.0,
+            "updatedDate": "2024-01-15",
+        },
     ],
 }

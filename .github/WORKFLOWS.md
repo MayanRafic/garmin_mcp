@@ -35,7 +35,20 @@ This repository uses GitHub Actions for continuous integration and security chec
 2. `test-installation` - Verifies the package installs correctly
 3. `pr-info` - Displays PR metadata for debugging
 
-### 3. Security Checks (`security.yml`)
+### 3. Lint (`lint.yml`)
+
+**Triggers:**
+- Pull requests to `main` or `master`
+- Pushes to `main` or `master`
+
+**What it does:**
+- Checks code formatting with `ruff format`
+- Lints the codebase with `ruff check`
+- Runs `ruff` via `uvx` (pinned to a specific version), so no extra project dependency is required
+
+**Configuration:** Ruff settings live under `[tool.ruff]` in `pyproject.toml`. The standalone demo script `example.py` is excluded from linting.
+
+### 4. Security Checks (`security.yml`)
 
 **Triggers:**
 - Pull requests to `main` or `master`
@@ -65,6 +78,10 @@ uv run pytest tests/integration tests/unit -v --tb=short
 
 # Check lock file status
 uv lock --check
+
+# Check formatting and lint (matches the Lint workflow)
+uvx ruff@0.9.6 format --check .
+uvx ruff@0.9.6 check .
 ```
 
 ## Skipped Tests
@@ -78,6 +95,7 @@ Add these badges to your README.md:
 ```markdown
 ![CI](https://github.com/YOUR_USERNAME/garmin_mcp/workflows/CI/badge.svg)
 ![PR Validation](https://github.com/YOUR_USERNAME/garmin_mcp/workflows/PR%20Validation/badge.svg)
+![Lint](https://github.com/YOUR_USERNAME/garmin_mcp/workflows/Lint/badge.svg)
 ![Security Checks](https://github.com/YOUR_USERNAME/garmin_mcp/workflows/Security%20Checks/badge.svg)
 ```
 

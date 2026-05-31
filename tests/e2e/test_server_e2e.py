@@ -16,7 +16,6 @@ Or skip with: pytest -m "not e2e"
 import pytest
 import asyncio
 from datetime import datetime
-from pathlib import Path
 from dotenv import load_dotenv
 
 # Import MCP client for testing
@@ -91,8 +90,7 @@ async def test_list_activities_tool():
 
                     # Test list_activities
                     result = await session.call_tool(
-                        "list_activities",
-                        arguments={"limit": 2}
+                        "list_activities", arguments={"limit": 2}
                     )
 
                     # Verify result
@@ -100,10 +98,12 @@ async def test_list_activities_tool():
                     assert len(result.content) > 0
 
                     # Print result for debugging
-                    print(f"\nlist_activities result preview:")
+                    print("\nlist_activities result preview:")
                     print(result.content[0].text[:500] + "...")
     except asyncio.TimeoutError:
-        pytest.fail("Tool execution timed out - check your Garmin credentials and network")
+        pytest.fail(
+            "Tool execution timed out - check your Garmin credentials and network"
+        )
 
 
 @pytest.mark.e2e
@@ -127,8 +127,7 @@ async def test_get_steps_data_tool():
                     today = datetime.now().strftime("%Y-%m-%d")
 
                     result = await session.call_tool(
-                        "get_steps_data",
-                        arguments={"date": today}
+                        "get_steps_data", arguments={"date": today}
                     )
 
                     # Verify result
@@ -136,10 +135,12 @@ async def test_get_steps_data_tool():
                     assert len(result.content) > 0
 
                     # Print result for debugging
-                    print(f"\nget_steps_data result preview:")
+                    print("\nget_steps_data result preview:")
                     print(result.content[0].text[:500] + "...")
     except asyncio.TimeoutError:
-        pytest.fail("Tool execution timed out - check your Garmin credentials and network")
+        pytest.fail(
+            "Tool execution timed out - check your Garmin credentials and network"
+        )
 
 
 @pytest.mark.e2e
@@ -178,4 +179,6 @@ async def test_multiple_tools():
                             # Don't fail the test for individual tool failures
                             # Some tools may not have data available
     except asyncio.TimeoutError:
-        pytest.fail("Multiple tools test timed out - check your Garmin credentials and network")
+        pytest.fail(
+            "Multiple tools test timed out - check your Garmin credentials and network"
+        )

@@ -1,9 +1,9 @@
 """
 Weight management functions for Garmin Connect MCP Server
 """
+
 import json
 import datetime
-from typing import Any, Dict, List, Optional, Union
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -29,12 +29,16 @@ def register_tools(app):
         try:
             data = garmin_client.get_weigh_ins(start_date, end_date)
             if not data:
-                return f"No weight measurements found between {start_date} and {end_date}."
+                return (
+                    f"No weight measurements found between {start_date} and {end_date}."
+                )
 
             # API returns nested structure: {dailyWeightSummaries: [{allWeightMetrics: [...]}]}
             daily_summaries = data.get("dailyWeightSummaries", [])
             if not daily_summaries:
-                return f"No weight measurements found between {start_date} and {end_date}."
+                return (
+                    f"No weight measurements found between {start_date} and {end_date}."
+                )
 
             # Extract all measurements from daily summaries
             all_measurements = []
@@ -47,14 +51,16 @@ def register_tools(app):
                 "date_range": {"start": start_date, "end": end_date},
                 "measurement_count": len(all_measurements),
                 "days_with_data": len(daily_summaries),
-                "measurements": []
+                "measurements": [],
             }
 
             for w in all_measurements:
                 measurement = {
                     "date": w.get("calendarDate"),
                     "weight_grams": w.get("weight"),
-                    "weight_kg": round(w.get("weight", 0) / 1000, 2) if w.get("weight") else None,
+                    "weight_kg": round(w.get("weight", 0) / 1000, 2)
+                    if w.get("weight")
+                    else None,
                     "bmi": w.get("bmi"),
                     "body_fat_percent": w.get("bodyFat"),
                     "body_water_percent": w.get("bodyWater"),
@@ -103,13 +109,15 @@ def register_tools(app):
             curated = {
                 "date": date,
                 "measurement_count": len(weight_list),
-                "measurements": []
+                "measurements": [],
             }
 
             for w in weight_list:
                 measurement = {
                     "weight_grams": w.get("weight"),
-                    "weight_kg": round(w.get("weight", 0) / 1000, 2) if w.get("weight") else None,
+                    "weight_kg": round(w.get("weight", 0) / 1000, 2)
+                    if w.get("weight")
+                    else None,
                     "bmi": w.get("bmi"),
                     "body_fat_percent": w.get("bodyFat"),
                     "body_water_percent": w.get("bodyWater"),
@@ -143,12 +151,17 @@ def register_tools(app):
         try:
             # API returns count of deleted entries
             deleted_count = garmin_client.delete_weigh_ins(date, delete_all=delete_all)
-            return json.dumps({
-                "status": "success",
-                "date": date,
-                "deleted_count": deleted_count if isinstance(deleted_count, int) else 0,
-                "message": f"Weight measurements deleted for {date}"
-            }, indent=2)
+            return json.dumps(
+                {
+                    "status": "success",
+                    "date": date,
+                    "deleted_count": deleted_count
+                    if isinstance(deleted_count, int)
+                    else 0,
+                    "message": f"Weight measurements deleted for {date}",
+                },
+                indent=2,
+            )
         except Exception as e:
             return f"Error deleting weight measurements: {str(e)}"
 
@@ -161,14 +174,17 @@ def register_tools(app):
             unit_key: Unit of weight ('kg' or 'lb')
         """
         try:
-            result = garmin_client.add_weigh_in(weight=weight, unitKey=unit_key)
+            garmin_client.add_weigh_in(weight=weight, unitKey=unit_key)
             # Return structured response
-            return json.dumps({
-                "status": "success",
-                "weight": weight,
-                "unit": unit_key,
-                "message": "Weight measurement added successfully"
-            }, indent=2)
+            return json.dumps(
+                {
+                    "status": "success",
+                    "weight": weight,
+                    "unit": unit_key,
+                    "message": "Weight measurement added successfully",
+                },
+                indent=2,
+            )
         except Exception as e:
             return f"Error adding weight measurement: {str(e)}"
 
@@ -177,7 +193,7 @@ def register_tools(app):
         weight: float,
         unit_key: str = "kg",
         date_timestamp: str = None,
-        gmt_timestamp: str = None
+        gmt_timestamp: str = None,
     ) -> str:
         """Add a new weight measurement with specific timestamps
 
@@ -191,24 +207,29 @@ def register_tools(app):
             if date_timestamp is None or gmt_timestamp is None:
                 # Generate timestamps if not provided
                 now = datetime.datetime.now()
-                date_timestamp = now.strftime('%Y-%m-%dT%H:%M:%S')
-                gmt_timestamp = now.astimezone(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S')
+                date_timestamp = now.strftime("%Y-%m-%dT%H:%M:%S")
+                gmt_timestamp = now.astimezone(datetime.timezone.utc).strftime(
+                    "%Y-%m-%dT%H:%M:%S"
+                )
 
-            result = garmin_client.add_weigh_in_with_timestamps(
+            garmin_client.add_weigh_in_with_timestamps(
                 weight=weight,
                 unitKey=unit_key,
                 dateTimestamp=date_timestamp,
-                gmtTimestamp=gmt_timestamp
+                gmtTimestamp=gmt_timestamp,
             )
             # Return structured response
-            return json.dumps({
-                "status": "success",
-                "weight": weight,
-                "unit": unit_key,
-                "timestamp_local": date_timestamp,
-                "timestamp_gmt": gmt_timestamp,
-                "message": "Weight measurement added successfully"
-            }, indent=2)
+            return json.dumps(
+                {
+                    "status": "success",
+                    "weight": weight,
+                    "unit": unit_key,
+                    "timestamp_local": date_timestamp,
+                    "timestamp_gmt": gmt_timestamp,
+                    "message": "Weight measurement added successfully",
+                },
+                indent=2,
+            )
         except Exception as e:
             return f"Error adding weight measurement with timestamps: {str(e)}"
 

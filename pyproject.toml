@@ -20,6 +20,12 @@ dependencies = [
 garmin-mcp = "garmin_mcp:main"
 garmin-mcp-auth = "garmin_mcp.auth_cli:main"
 
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+# example.py is a standalone demonstration script, not part of the package.
+extend-exclude = ["example.py"]
+
 [tool.uv]
 dev-dependencies = [
     "pytest>=9.0.2",

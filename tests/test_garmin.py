@@ -12,8 +12,9 @@ from dotenv import load_dotenv
 from garminconnect import Garmin
 
 # Load environment variables from .env file
-env_path = Path(__file__).parent / '.env'
+env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
+
 
 def test_garmin_login():
     """Test Garmin Connect login"""
@@ -21,7 +22,9 @@ def test_garmin_login():
     password = os.environ.get("GARMIN_PASSWORD")
 
     if not email or not password:
-        print("ERROR: GARMIN_EMAIL and GARMIN_PASSWORD environment variables must be set in .env file")
+        print(
+            "ERROR: GARMIN_EMAIL and GARMIN_PASSWORD environment variables must be set in .env file"
+        )
         return False
 
     print(f"Attempting to login with email: {email}")
@@ -34,8 +37,11 @@ def test_garmin_login():
     except Exception as e:
         print(f"ERROR: Login failed: {str(e)}")
         print("\nNote: Garmin Connect might require additional verification.")
-        print("If this is the first time using this API, try logging in through the official Garmin website first.")
+        print(
+            "If this is the first time using this API, try logging in through the official Garmin website first."
+        )
         return False
+
 
 def test_activities(client, limit=3):
     """Test retrieving activities"""
@@ -55,9 +61,10 @@ def test_activities(client, limit=3):
 
         if activities:
             # Save the first activity ID for testing get_activity_details
-            return activities[0].get('activityId')
+            return activities[0].get("activityId")
     except Exception as e:
         print(f"ERROR: Failed to retrieve activities: {str(e)}")
+
 
 def test_activity_details(client, activity_id):
     """Test retrieving activity details"""
@@ -70,6 +77,7 @@ def test_activity_details(client, activity_id):
         print(json.dumps(activity, indent=2)[:1000] + "... (truncated)")
     except Exception as e:
         print(f"ERROR: Failed to retrieve activity details: {str(e)}")
+
 
 def test_health_data(client):
     """Test retrieving health data for today"""
@@ -99,12 +107,13 @@ def test_health_data(client):
     # Test sleep data
     try:
         sleep_data = client.get_sleep_data(today)
-        daily_sleep_data = sleep_data.get('dailySleepDTO', sleep_data)
+        daily_sleep_data = sleep_data.get("dailySleepDTO", sleep_data)
         print("\nSleep Data:")
-        sleep_score = daily_sleep_data.get('sleepScoreTotal', 0)
+        sleep_score = daily_sleep_data.get("sleepScoreTotal", 0)
         print(f"Sleep Score: {sleep_score}")
     except Exception as e:
         print(f"ERROR: Failed to retrieve sleep data: {str(e)}")
+
 
 if __name__ == "__main__":
     client = test_garmin_login()

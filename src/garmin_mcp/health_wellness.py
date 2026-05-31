@@ -1,9 +1,9 @@
 """
 Health & Wellness Data functions for Garmin Connect MCP Server
 """
+
 import json
 import datetime
-from typing import Any, Dict, List, Optional, Union
 
 # The garmin_client will be set by the main file
 garmin_client = None
@@ -35,57 +35,54 @@ def register_tools(app):
 
             # Curate to essential fields only
             summary = {
-                "date": stats.get('calendarDate'),
-
+                "date": stats.get("calendarDate"),
                 # Activity
-                "total_steps": stats.get('totalSteps'),
-                "daily_step_goal": stats.get('dailyStepGoal'),
-                "distance_meters": stats.get('totalDistanceMeters'),
-                "floors_ascended": round(stats.get('floorsAscended', 0), 1) if stats.get('floorsAscended') else None,
-                "floors_descended": round(stats.get('floorsDescended', 0), 1) if stats.get('floorsDescended') else None,
-
+                "total_steps": stats.get("totalSteps"),
+                "daily_step_goal": stats.get("dailyStepGoal"),
+                "distance_meters": stats.get("totalDistanceMeters"),
+                "floors_ascended": round(stats.get("floorsAscended", 0), 1)
+                if stats.get("floorsAscended")
+                else None,
+                "floors_descended": round(stats.get("floorsDescended", 0), 1)
+                if stats.get("floorsDescended")
+                else None,
                 # Calories
-                "total_calories": stats.get('totalKilocalories'),
-                "active_calories": stats.get('activeKilocalories'),
-                "bmr_calories": stats.get('bmrKilocalories'),
-
+                "total_calories": stats.get("totalKilocalories"),
+                "active_calories": stats.get("activeKilocalories"),
+                "bmr_calories": stats.get("bmrKilocalories"),
                 # Activity duration
-                "highly_active_seconds": stats.get('highlyActiveSeconds'),
-                "active_seconds": stats.get('activeSeconds'),
-                "sedentary_seconds": stats.get('sedentarySeconds'),
-                "sleeping_seconds": stats.get('sleepingSeconds'),
-
+                "highly_active_seconds": stats.get("highlyActiveSeconds"),
+                "active_seconds": stats.get("activeSeconds"),
+                "sedentary_seconds": stats.get("sedentarySeconds"),
+                "sleeping_seconds": stats.get("sleepingSeconds"),
                 # Intensity minutes
-                "moderate_intensity_minutes": stats.get('moderateIntensityMinutes'),
-                "vigorous_intensity_minutes": stats.get('vigorousIntensityMinutes'),
-                "intensity_minutes_goal": stats.get('intensityMinutesGoal'),
-
+                "moderate_intensity_minutes": stats.get("moderateIntensityMinutes"),
+                "vigorous_intensity_minutes": stats.get("vigorousIntensityMinutes"),
+                "intensity_minutes_goal": stats.get("intensityMinutesGoal"),
                 # Heart rate
-                "min_heart_rate_bpm": stats.get('minHeartRate'),
-                "max_heart_rate_bpm": stats.get('maxHeartRate'),
-                "resting_heart_rate_bpm": stats.get('restingHeartRate'),
-                "last_7_days_avg_resting_hr": stats.get('lastSevenDaysAvgRestingHeartRate'),
-
+                "min_heart_rate_bpm": stats.get("minHeartRate"),
+                "max_heart_rate_bpm": stats.get("maxHeartRate"),
+                "resting_heart_rate_bpm": stats.get("restingHeartRate"),
+                "last_7_days_avg_resting_hr": stats.get(
+                    "lastSevenDaysAvgRestingHeartRate"
+                ),
                 # Stress
-                "avg_stress_level": stats.get('averageStressLevel'),
-                "max_stress_level": stats.get('maxStressLevel'),
-                "stress_qualifier": stats.get('stressQualifier'),
-
+                "avg_stress_level": stats.get("averageStressLevel"),
+                "max_stress_level": stats.get("maxStressLevel"),
+                "stress_qualifier": stats.get("stressQualifier"),
                 # Body Battery
-                "body_battery_charged": stats.get('bodyBatteryChargedValue'),
-                "body_battery_drained": stats.get('bodyBatteryDrainedValue'),
-                "body_battery_highest": stats.get('bodyBatteryHighestValue'),
-                "body_battery_lowest": stats.get('bodyBatteryLowestValue'),
-                "body_battery_current": stats.get('bodyBatteryMostRecentValue'),
-
+                "body_battery_charged": stats.get("bodyBatteryChargedValue"),
+                "body_battery_drained": stats.get("bodyBatteryDrainedValue"),
+                "body_battery_highest": stats.get("bodyBatteryHighestValue"),
+                "body_battery_lowest": stats.get("bodyBatteryLowestValue"),
+                "body_battery_current": stats.get("bodyBatteryMostRecentValue"),
                 # SpO2
-                "avg_spo2_percent": stats.get('averageSpo2'),
-                "lowest_spo2_percent": stats.get('lowestSpo2'),
-
+                "avg_spo2_percent": stats.get("averageSpo2"),
+                "lowest_spo2_percent": stats.get("lowestSpo2"),
                 # Respiration
-                "avg_waking_respiration": stats.get('avgWakingRespirationValue'),
-                "highest_respiration": stats.get('highestRespirationValue'),
-                "lowest_respiration": stats.get('lowestRespirationValue'),
+                "avg_waking_respiration": stats.get("avgWakingRespirationValue"),
+                "highest_respiration": stats.get("highestRespirationValue"),
+                "lowest_respiration": stats.get("lowestRespirationValue"),
             }
 
             # Remove None values for cleaner output
@@ -203,37 +200,34 @@ def register_tools(app):
             curated = []
             for r in readiness_list:
                 entry = {
-                    "date": r.get('calendarDate'),
-                    "timestamp": r.get('timestampLocal'),
-                    "context": r.get('inputContext'),
-
+                    "date": r.get("calendarDate"),
+                    "timestamp": r.get("timestampLocal"),
+                    "context": r.get("inputContext"),
                     # Overall readiness
-                    "level": r.get('level'),
-                    "score": r.get('score'),
-                    "feedback": r.get('feedbackShort'),
-
+                    "level": r.get("level"),
+                    "score": r.get("score"),
+                    "feedback": r.get("feedbackShort"),
                     # Contributing factors
-                    "sleep_score": r.get('sleepScore'),
-                    "sleep_factor_percent": r.get('sleepScoreFactorPercent'),
-                    "sleep_factor_feedback": r.get('sleepScoreFactorFeedback'),
-
-                    "recovery_time_hours": round(r.get('recoveryTime', 0) / 60, 1) if r.get('recoveryTime') else None,
-                    "recovery_factor_percent": r.get('recoveryTimeFactorPercent'),
-                    "recovery_factor_feedback": r.get('recoveryTimeFactorFeedback'),
-
-                    "training_load_factor_percent": r.get('acwrFactorPercent'),
-                    "training_load_feedback": r.get('acwrFactorFeedback'),
-                    "acute_load": r.get('acuteLoad'),
-
-                    "hrv_factor_percent": r.get('hrvFactorPercent'),
-                    "hrv_factor_feedback": r.get('hrvFactorFeedback'),
-                    "hrv_weekly_avg": r.get('hrvWeeklyAverage'),
-
-                    "stress_history_factor_percent": r.get('stressHistoryFactorPercent'),
-                    "stress_history_feedback": r.get('stressHistoryFactorFeedback'),
-
-                    "sleep_history_factor_percent": r.get('sleepHistoryFactorPercent'),
-                    "sleep_history_feedback": r.get('sleepHistoryFactorFeedback'),
+                    "sleep_score": r.get("sleepScore"),
+                    "sleep_factor_percent": r.get("sleepScoreFactorPercent"),
+                    "sleep_factor_feedback": r.get("sleepScoreFactorFeedback"),
+                    "recovery_time_hours": round(r.get("recoveryTime", 0) / 60, 1)
+                    if r.get("recoveryTime")
+                    else None,
+                    "recovery_factor_percent": r.get("recoveryTimeFactorPercent"),
+                    "recovery_factor_feedback": r.get("recoveryTimeFactorFeedback"),
+                    "training_load_factor_percent": r.get("acwrFactorPercent"),
+                    "training_load_feedback": r.get("acwrFactorFeedback"),
+                    "acute_load": r.get("acuteLoad"),
+                    "hrv_factor_percent": r.get("hrvFactorPercent"),
+                    "hrv_factor_feedback": r.get("hrvFactorFeedback"),
+                    "hrv_weekly_avg": r.get("hrvWeeklyAverage"),
+                    "stress_history_factor_percent": r.get(
+                        "stressHistoryFactorPercent"
+                    ),
+                    "stress_history_feedback": r.get("stressHistoryFactorFeedback"),
+                    "sleep_history_factor_percent": r.get("sleepHistoryFactorPercent"),
+                    "sleep_history_feedback": r.get("sleepHistoryFactorFeedback"),
                 }
                 # Remove None values
                 entry = {k: v for k, v in entry.items() if v is not None}
@@ -260,28 +254,31 @@ def register_tools(app):
             curated = []
             for day in battery_data:
                 entry = {
-                    "date": day.get('date'),
-                    "charged": day.get('charged'),
-                    "drained": day.get('drained'),
-
+                    "date": day.get("date"),
+                    "charged": day.get("charged"),
+                    "drained": day.get("drained"),
                     # Curate activity events
-                    "events": []
+                    "events": [],
                 }
 
-                for event in day.get('bodyBatteryActivityEvent', []):
-                    entry["events"].append({
-                        "type": event.get('eventType'),
-                        "start_time": event.get('eventStartTimeGmt'),
-                        "duration_minutes": round(event.get('durationInMilliseconds', 0) / 60000, 1),
-                        "body_battery_impact": event.get('bodyBatteryImpact'),
-                        "feedback": event.get('shortFeedback'),
-                    })
+                for event in day.get("bodyBatteryActivityEvent", []):
+                    entry["events"].append(
+                        {
+                            "type": event.get("eventType"),
+                            "start_time": event.get("eventStartTimeGmt"),
+                            "duration_minutes": round(
+                                event.get("durationInMilliseconds", 0) / 60000, 1
+                            ),
+                            "body_battery_impact": event.get("bodyBatteryImpact"),
+                            "feedback": event.get("shortFeedback"),
+                        }
+                    )
 
                 # Add dynamic feedback if present
-                feedback = day.get('bodyBatteryDynamicFeedbackEvent', {})
+                feedback = day.get("bodyBatteryDynamicFeedbackEvent", {})
                 if feedback:
-                    entry["current_feedback"] = feedback.get('feedbackShortType')
-                    entry["body_battery_level"] = feedback.get('bodyBatteryLevel')
+                    entry["current_feedback"] = feedback.get("feedbackShortType")
+                    entry["body_battery_level"] = feedback.get("bodyBatteryLevel")
 
                 curated.append(entry)
 
@@ -316,7 +313,9 @@ def register_tools(app):
         try:
             bp_data = garmin_client.get_blood_pressure(start_date, end_date)
             if not bp_data:
-                return f"No blood pressure data found between {start_date} and {end_date}"
+                return (
+                    f"No blood pressure data found between {start_date} and {end_date}"
+                )
 
             return json.dumps(bp_data, indent=2)
         except Exception as e:
@@ -389,19 +388,23 @@ def register_tools(app):
                 return f"No heart rate data found for {date}"
 
             summary = {
-                "date": hr_data.get('calendarDate'),
-                "max_heart_rate_bpm": hr_data.get('maxHeartRate'),
-                "min_heart_rate_bpm": hr_data.get('minHeartRate'),
-                "resting_heart_rate_bpm": hr_data.get('restingHeartRate'),
-                "last_7_days_avg_resting_hr": hr_data.get('lastSevenDaysAvgRestingHeartRate'),
+                "date": hr_data.get("calendarDate"),
+                "max_heart_rate_bpm": hr_data.get("maxHeartRate"),
+                "min_heart_rate_bpm": hr_data.get("minHeartRate"),
+                "resting_heart_rate_bpm": hr_data.get("restingHeartRate"),
+                "last_7_days_avg_resting_hr": hr_data.get(
+                    "lastSevenDaysAvgRestingHeartRate"
+                ),
             }
 
             # Calculate average from time-series if available
-            hr_values = hr_data.get('heartRateValues', [])
+            hr_values = hr_data.get("heartRateValues", [])
             if hr_values:
                 valid_values = [v[1] for v in hr_values if v[1] and v[1] > 0]
                 if valid_values:
-                    summary["avg_heart_rate_bpm"] = round(sum(valid_values) / len(valid_values), 1)
+                    summary["avg_heart_rate_bpm"] = round(
+                        sum(valid_values) / len(valid_values), 1
+                    )
                     summary["data_points_count"] = len(valid_values)
 
             # Remove None values
@@ -466,52 +469,66 @@ def register_tools(app):
             summary = {}
 
             # Extract data from dailySleepDTO if available
-            daily_sleep = sleep_data.get('dailySleepDTO', {})
+            daily_sleep = sleep_data.get("dailySleepDTO", {})
             if daily_sleep:
                 # Sleep duration and timing
-                summary['sleep_seconds'] = daily_sleep.get('sleepTimeSeconds')
-                summary['nap_seconds'] = daily_sleep.get('napTimeSeconds')
-                summary['sleep_start'] = daily_sleep.get('sleepStartTimestampGMT')
-                summary['sleep_end'] = daily_sleep.get('sleepEndTimestampGMT')
+                summary["sleep_seconds"] = daily_sleep.get("sleepTimeSeconds")
+                summary["nap_seconds"] = daily_sleep.get("napTimeSeconds")
+                summary["sleep_start"] = daily_sleep.get("sleepStartTimestampGMT")
+                summary["sleep_end"] = daily_sleep.get("sleepEndTimestampGMT")
 
                 # Sleep score and quality
-                summary['sleep_score'] = daily_sleep.get('sleepScores', {}).get('overall', {}).get('value')
-                summary['sleep_score_qualifier'] = daily_sleep.get('sleepScores', {}).get('overall', {}).get('qualifierKey')
+                summary["sleep_score"] = (
+                    daily_sleep.get("sleepScores", {}).get("overall", {}).get("value")
+                )
+                summary["sleep_score_qualifier"] = (
+                    daily_sleep.get("sleepScores", {})
+                    .get("overall", {})
+                    .get("qualifierKey")
+                )
 
                 # Sleep phases (in seconds)
-                summary['deep_sleep_seconds'] = daily_sleep.get('deepSleepSeconds')
-                summary['light_sleep_seconds'] = daily_sleep.get('lightSleepSeconds')
-                summary['rem_sleep_seconds'] = daily_sleep.get('remSleepSeconds')
-                summary['awake_seconds'] = daily_sleep.get('awakeSleepSeconds')
+                summary["deep_sleep_seconds"] = daily_sleep.get("deepSleepSeconds")
+                summary["light_sleep_seconds"] = daily_sleep.get("lightSleepSeconds")
+                summary["rem_sleep_seconds"] = daily_sleep.get("remSleepSeconds")
+                summary["awake_seconds"] = daily_sleep.get("awakeSleepSeconds")
 
                 # Sleep disruptions
-                summary['awake_count'] = daily_sleep.get('awakeCount')
-                summary['restless_moments_count'] = daily_sleep.get('restlessMomentsCount')
+                summary["awake_count"] = daily_sleep.get("awakeCount")
+                summary["restless_moments_count"] = daily_sleep.get(
+                    "restlessMomentsCount"
+                )
 
                 # Average physiological metrics
-                summary['avg_sleep_stress'] = daily_sleep.get('avgSleepStress')
-                summary['resting_heart_rate_bpm'] = daily_sleep.get('restingHeartRate')
+                summary["avg_sleep_stress"] = daily_sleep.get("avgSleepStress")
+                summary["resting_heart_rate_bpm"] = daily_sleep.get("restingHeartRate")
 
             # Extract SpO2 summary if available
-            spo2_summary = sleep_data.get('wellnessSpO2SleepSummaryDTO', {})
+            spo2_summary = sleep_data.get("wellnessSpO2SleepSummaryDTO", {})
             if spo2_summary:
-                summary['avg_spo2_percent'] = spo2_summary.get('averageSpo2')
-                summary['lowest_spo2_percent'] = spo2_summary.get('lowestSpo2')
+                summary["avg_spo2_percent"] = spo2_summary.get("averageSpo2")
+                summary["lowest_spo2_percent"] = spo2_summary.get("lowestSpo2")
 
             # Add HRV data if available at top level
-            if 'avgOvernightHrv' in sleep_data:
-                summary['avg_overnight_hrv'] = sleep_data.get('avgOvernightHrv')
+            if "avgOvernightHrv" in sleep_data:
+                summary["avg_overnight_hrv"] = sleep_data.get("avgOvernightHrv")
 
             # Calculate sleep phase percentages if total sleep time is available
-            total_sleep = summary.get('sleep_seconds', 0)
+            total_sleep = summary.get("sleep_seconds", 0)
             if total_sleep and total_sleep > 0:
-                summary['deep_sleep_percent'] = round((summary.get('deep_sleep_seconds', 0) / total_sleep) * 100, 1)
-                summary['light_sleep_percent'] = round((summary.get('light_sleep_seconds', 0) / total_sleep) * 100, 1)
-                summary['rem_sleep_percent'] = round((summary.get('rem_sleep_seconds', 0) / total_sleep) * 100, 1)
+                summary["deep_sleep_percent"] = round(
+                    (summary.get("deep_sleep_seconds", 0) / total_sleep) * 100, 1
+                )
+                summary["light_sleep_percent"] = round(
+                    (summary.get("light_sleep_seconds", 0) / total_sleep) * 100, 1
+                )
+                summary["rem_sleep_percent"] = round(
+                    (summary.get("rem_sleep_seconds", 0) / total_sleep) * 100, 1
+                )
 
             # Convert sleep duration to hours for convenience
             if total_sleep:
-                summary['sleep_hours'] = round(total_sleep / 3600, 2)
+                summary["sleep_hours"] = round(total_sleep / 3600, 2)
 
             # Remove None values
             summary = {k: v for k, v in summary.items() if v is not None}
@@ -555,13 +572,13 @@ def register_tools(app):
                 return f"No stress data found for {date}"
 
             summary = {
-                "date": stress_data.get('calendarDate'),
-                "max_stress_level": stress_data.get('maxStressLevel'),
-                "avg_stress_level": stress_data.get('avgStressLevel'),
+                "date": stress_data.get("calendarDate"),
+                "max_stress_level": stress_data.get("maxStressLevel"),
+                "avg_stress_level": stress_data.get("avgStressLevel"),
             }
 
             # Calculate stress distribution from time-series if available
-            stress_values = stress_data.get('stressValuesArray', [])
+            stress_values = stress_data.get("stressValuesArray", [])
             if stress_values:
                 # Filter valid stress readings (exclude -1 and -2 which are gaps/activity)
                 valid_values = [v[1] for v in stress_values if v[1] and v[1] > 0]
@@ -573,8 +590,12 @@ def register_tools(app):
                 total = len(valid_values) if valid_values else 1
                 summary["rest_percent"] = round(len(rest_values) / total * 100, 1)
                 summary["low_stress_percent"] = round(len(low_values) / total * 100, 1)
-                summary["medium_stress_percent"] = round(len(medium_values) / total * 100, 1)
-                summary["high_stress_percent"] = round(len(high_values) / total * 100, 1)
+                summary["medium_stress_percent"] = round(
+                    len(medium_values) / total * 100, 1
+                )
+                summary["high_stress_percent"] = round(
+                    len(high_values) / total * 100, 1
+                )
                 summary["data_points_count"] = len(valid_values)
 
             # Remove None values
@@ -618,11 +639,13 @@ def register_tools(app):
                 return f"No respiration data found for {date}"
 
             summary = {
-                "date": resp_data.get('calendarDate'),
-                "lowest_breaths_per_min": resp_data.get('lowestRespirationValue'),
-                "highest_breaths_per_min": resp_data.get('highestRespirationValue'),
-                "avg_waking_breaths_per_min": resp_data.get('avgWakingRespirationValue'),
-                "avg_sleep_breaths_per_min": resp_data.get('avgSleepRespirationValue'),
+                "date": resp_data.get("calendarDate"),
+                "lowest_breaths_per_min": resp_data.get("lowestRespirationValue"),
+                "highest_breaths_per_min": resp_data.get("highestRespirationValue"),
+                "avg_waking_breaths_per_min": resp_data.get(
+                    "avgWakingRespirationValue"
+                ),
+                "avg_sleep_breaths_per_min": resp_data.get("avgSleepRespirationValue"),
             }
 
             # Remove None values
@@ -646,17 +669,17 @@ def register_tools(app):
 
             # Curate the response
             summary = {
-                "date": spo2_data.get('calendarDate'),
-                "avg_spo2_percent": spo2_data.get('averageSpO2'),
-                "lowest_spo2_percent": spo2_data.get('lowestSpO2'),
-                "latest_spo2_percent": spo2_data.get('latestSpO2'),
-                "latest_reading_time": spo2_data.get('latestSpO2TimestampLocal'),
-                "last_7_days_avg_spo2": spo2_data.get('lastSevenDaysAvgSpO2'),
-                "avg_sleep_spo2_percent": spo2_data.get('avgSleepSpO2'),
+                "date": spo2_data.get("calendarDate"),
+                "avg_spo2_percent": spo2_data.get("averageSpO2"),
+                "lowest_spo2_percent": spo2_data.get("lowestSpO2"),
+                "latest_spo2_percent": spo2_data.get("latestSpO2"),
+                "latest_reading_time": spo2_data.get("latestSpO2TimestampLocal"),
+                "last_7_days_avg_spo2": spo2_data.get("lastSevenDaysAvgSpO2"),
+                "avg_sleep_spo2_percent": spo2_data.get("avgSleepSpO2"),
             }
 
             # Include hourly averages if available
-            hourly = spo2_data.get('spO2HourlyAverages')
+            hourly = spo2_data.get("spO2HourlyAverages")
             if hourly:
                 summary["hourly_averages"] = hourly
 
@@ -779,7 +802,9 @@ def register_tools(app):
             weeks = min(weeks, 52)  # Cap at 52 weeks
             weekly_data = garmin_client.get_weekly_stress(end_date, weeks)
             if not weekly_data:
-                return f"No weekly stress data found for {weeks} weeks ending {end_date}"
+                return (
+                    f"No weekly stress data found for {weeks} weeks ending {end_date}"
+                )
 
             # Curate the weekly stress data (API returns a list)
             curated_weeks = []
@@ -826,7 +851,9 @@ def register_tools(app):
             start_dt = end_dt - datetime.timedelta(days=(weeks * 7) - 1)
             start_date = start_dt.strftime("%Y-%m-%d")
 
-            weekly_data = garmin_client.get_weekly_intensity_minutes(start_date, end_date)
+            weekly_data = garmin_client.get_weekly_intensity_minutes(
+                start_date, end_date
+            )
             if not weekly_data:
                 return f"No weekly intensity minutes data found for {weeks} weeks ending {end_date}"
 
@@ -881,20 +908,20 @@ def register_tools(app):
             # Curate the morning training readiness data
             curated = {
                 "date": date,
-                "readiness_score": readiness.get('readinessScore'),
-                "readiness_level": readiness.get('readinessLevel'),
-                "recovery_time_hours": readiness.get('recoveryTime'),
-                "hrv_status": readiness.get('hrvStatus'),
-                "sleep_quality": readiness.get('sleepQuality'),
-                "sleep_score": readiness.get('sleepScore'),
-                "resting_heart_rate_bpm": readiness.get('restingHeartRate'),
-                "hrv_baseline": readiness.get('hrvBaseline'),
-                "hrv_last_night": readiness.get('hrvLastNight'),
-                "body_battery_percent": readiness.get('bodyBattery'),
-                "stress_level": readiness.get('stressLevel'),
-                "training_load_balance": readiness.get('trainingLoadBalance'),
-                "acute_load": readiness.get('acuteLoad'),
-                "chronic_load": readiness.get('chronicLoad'),
+                "readiness_score": readiness.get("readinessScore"),
+                "readiness_level": readiness.get("readinessLevel"),
+                "recovery_time_hours": readiness.get("recoveryTime"),
+                "hrv_status": readiness.get("hrvStatus"),
+                "sleep_quality": readiness.get("sleepQuality"),
+                "sleep_score": readiness.get("sleepScore"),
+                "resting_heart_rate_bpm": readiness.get("restingHeartRate"),
+                "hrv_baseline": readiness.get("hrvBaseline"),
+                "hrv_last_night": readiness.get("hrvLastNight"),
+                "body_battery_percent": readiness.get("bodyBattery"),
+                "stress_level": readiness.get("stressLevel"),
+                "training_load_balance": readiness.get("trainingLoadBalance"),
+                "acute_load": readiness.get("acuteLoad"),
+                "chronic_load": readiness.get("chronicLoad"),
             }
 
             # Remove None values
