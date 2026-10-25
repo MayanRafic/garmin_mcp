@@ -1,8 +1,13 @@
 # Garmin MCP on Railway
 
 This runs the Garmin history tools on a persistent Railway service, independently
-of a laptop. OpenAI Secure MCP Tunnel connects ChatGPT to the private stdio server;
-no public Garmin MCP endpoint or public operator UI is exposed.
+of a laptop. It supports a private OpenAI Secure MCP Tunnel, or a directly hosted
+HTTPS endpoint protected by single-owner OAuth. Both expose the same read tools.
+
+The direct HTTPS option is prepared for the current deployment because the
+Platform key-creation UI does not expose the documented restricted Tunnels scopes.
+No broad OpenAI API key or admin key is required for this option. The existing
+tunnel can remain unused; it does not need to be deleted.
 
 The cloud entry point explicitly registers 35 read tools. It does not expose
 weight deletion, food logging, activity uploads or other Garmin write actions.
@@ -20,7 +25,45 @@ The project's initial display name is `health-agent`; it can be renamed to
 `garmin-mcp` in Railway settings without changing the IDs. The separate
 `whatsapp-context` project is not involved.
 
-## Deployment settings
+## Direct HTTPS connection (current deployment)
+
+Use `GARMIN_TRANSPORT=https`, `PORT=8080`, the same persistent `/data` volume and
+Garmin session already staged in Railway. Set `OWNER_PASSWORD` directly in Railway
+to a new password of at least 20 characters, saved in a password manager. This is
+the password for approving the ChatGPT connection, not the Garmin password. Never
+paste it into chat. `CONTROL_PLANE_API_KEY` is not used in HTTPS mode.
+
+Once the staged service exists live, generate its Railway HTTPS domain targeting
+port 8080. The runtime derives its canonical origin from `RAILWAY_PUBLIC_DOMAIN`;
+alternatively set `PUBLIC_URL` explicitly to that exact HTTPS origin. A new staged
+service cannot receive a domain before its first deployment. If the initial start
+stops for a missing domain, generate the domain and redeploy the same pinned source.
+The runtime fails closed until the origin and owner password are configured.
+
+In the **adva** ChatGPT workspace, add a custom MCP server named **Garmin**, using
+the generated `https://<railway-domain>/mcp` URL, OAuth, and dynamic client
+registration. Discovery advertises S256 PKCE and issuer identification (RFC 9207),
+with the stable ChatGPT callback `https://chatgpt.com/connector_platform_oauth_redirect`.
+Confirm the management page shows that exact callback; if it shows another URI,
+put that exact URI in `OAUTH_REDIRECT_URIS` and redeploy before linking. This setting
+is a comma-separated allowlist; arbitrary callbacks are rejected. Then sign in
+using the new connection password and explicitly allow read access.
+
+The server validates owner consent, CSRF, PKCE, client, resource, expiry and scope.
+OAuth clients and grant state persist in `/data/oauth/oauth.sqlite3` with private
+file permissions; access, refresh and authorization-code values are stored as
+hashes. Refresh tokens rotate; detected reuse revokes the token family. Request
+bodies and authorization rates are bounded. Access logging is disabled so callback
+parameters and tokens do not enter HTTP access logs. The Garmin session and OAuth
+approval state remain separate.
+
+Public discovery and `/healthz` contain no health data. `/mcp` requires a valid
+`garmin:read` access token, including for tool discovery. Verify an unauthenticated
+request returns 401, then perform a real `count_activities` and small activity-page
+read through ChatGPT. A health response or local mocked test is not live Garmin
+verification.
+
+## Private tunnel deployment (alternative)
 
 Use `Dockerfile.railway` and `railway.json`, one replica, sleeping disabled.
 No public domain or incoming TCP proxy is required. The container makes outbound

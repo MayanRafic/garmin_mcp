@@ -1,6 +1,7 @@
 """Private, read-only Garmin MCP runtime with persistent authentication.
 
-The cloud process uses OpenAI Secure MCP Tunnel; it opens no public MCP port.
+The default transport uses OpenAI Secure MCP Tunnel without a public MCP port.
+GARMIN_TRANSPORT=https selects the alternative single-owner OAuth HTTP server.
 GARMIN_SESSION_B64 is a one-time seed supplied through the host's secret store.
 """
 
@@ -112,13 +113,13 @@ class ReadOnlyRegistration:
         return register
 
 
-def build_app(client) -> FastMCP:
+def build_app(client, **settings) -> FastMCP:
     app = FastMCP("Garmin Health", instructions=(
         "Read-only personal Garmin history. Paginate get_activities until complete; "
         "compare coverage against count_activities. Use daily sleep and HRV tools "
         "for recent trends. Missing wearable data is unknown, not zero. "
         "Wearable estimates cannot establish recovery from an injury."
-    ))
+    ), **settings)
     registrar = ReadOnlyRegistration(app)
     for module in (activity_management, health_wellness, training, weight_management, nutrition):
         module.configure(client)
@@ -126,7 +127,7 @@ def build_app(client) -> FastMCP:
     return app
 
 
-def readonly_main() -> None:
+def authenticated_client():
     directory = Path(os.getenv("GARMINTOKENS", "/data/garmin")).expanduser()
     try:
         seed_tokens(directory)
@@ -136,7 +137,11 @@ def readonly_main() -> None:
     except Exception:
         print("Garmin session unavailable; check secret setup or reauthenticate.", file=sys.stderr)
         raise SystemExit(1) from None
-    build_app(PersistentGarmin(client, directory)).run(transport="stdio")
+    return PersistentGarmin(client, directory)
+
+
+def readonly_main() -> None:
+    build_app(authenticated_client()).run(transport="stdio")
 
 
 def tunnel_command():
@@ -150,6 +155,10 @@ def tunnel_command():
 
 
 def main() -> None:
+    if os.getenv("GARMIN_TRANSPORT", "tunnel") == "https":
+        from garmin_mcp.http_runtime import main as http_main
+        http_main()
+        return
     try:
         command = tunnel_command()
         seed_tokens(Path(os.getenv("GARMINTOKENS", "/data/garmin")).expanduser())
