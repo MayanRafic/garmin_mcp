@@ -236,9 +236,11 @@ class OwnerOAuth:
             csrf = form.get("csrf", "")
             password = form.get("password", "")
             if (request.headers.get("origin") != self.origin
-                    or not isinstance(csrf, str) or not isinstance(password, str)
+                    or not isinstance(csrf, str)
                     or not hmac.compare_digest(csrf, request.cookies.get(COOKIE, ""))
-                    or not hmac.compare_digest(digest(csrf), grant.get("csrf", ""))
+                    or not hmac.compare_digest(digest(csrf), grant.get("csrf", ""))):
+                return PlainTextResponse("Browser session check failed. Reopen the Garmin connection in ChatGPT and try again.", 403)
+            if (not isinstance(password, str)
                     or not hmac.compare_digest(self.hash_password(password), self.password_hash)):
                 return PlainTextResponse("Unable to authorize. Return and check your connection password.", 403)
             code = secrets.token_urlsafe(32)
@@ -312,7 +314,10 @@ class GuardMiddleware:
                             query = [(k, v) for k, v in parse_qsl(target.query) if k != "iss"]
                             query.append(("iss", self.provider.issuer))
                             headers[i] = (name, urlunsplit(target._replace(query=urlencode(query))).encode("latin-1"))
-                headers.extend([(b"cache-control", b"no-store"), (b"referrer-policy", b"no-referrer"),
+                # no-referrer makes Chromium send Origin:null on HTML form POSTs.
+                # Preserve same-origin form requests without sending referrers to external callbacks.
+                referrer_policy = b"same-origin" if path == "/consent" else b"no-referrer"
+                headers.extend([(b"cache-control", b"no-store"), (b"referrer-policy", referrer_policy),
                                 (b"x-content-type-options", b"nosniff"), (b"x-frame-options", b"DENY"),
                                 (b"content-security-policy", b"default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")])
                 message = dict(message, headers=headers)
