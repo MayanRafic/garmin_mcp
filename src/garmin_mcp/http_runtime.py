@@ -97,8 +97,8 @@ class OwnerOAuth:
         self.origin = canonical_origin(origin)
         self.issuer = self.origin + "/"
         self.resource = self.origin + "/mcp"
-        if len(password) < 20:
-            raise ValueError("Set OWNER_PASSWORD to a new password of at least 20 characters")
+        if len(password) < 10:
+            raise ValueError("Set OWNER_PASSWORD to a connection password of at least 10 characters")
         self.salt = secrets.token_bytes(16)
         self.password_hash = self.hash_password(password)
         self.redirects = set(redirects if redirects is not None else [STABLE_CALLBACK])

@@ -29,8 +29,10 @@ The project's initial display name is `health-agent`; it can be renamed to
 
 Use `GARMIN_TRANSPORT=https`, `PORT=8080`, the same persistent `/data` volume and
 Garmin session already staged in Railway. Set `OWNER_PASSWORD` directly in Railway
-to a new password of at least 20 characters, saved in a password manager. This is
-the password for approving the ChatGPT connection, not the Garmin password. Never
+to a new password of at least 10 characters. No particular character mix is
+required. Use a unique password for this connection. Railway
+stores the value, and a separate password manager is optional. This is the
+password for approving the ChatGPT connection, not the Garmin password. Never
 paste it into chat. `CONTROL_PLANE_API_KEY` is not used in HTTPS mode.
 
 Once the staged service exists live, generate its Railway HTTPS domain targeting

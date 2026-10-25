@@ -13,7 +13,8 @@ from garmin_mcp.http_runtime import OwnerOAuth, STABLE_CALLBACK, build_http_app
 
 
 ORIGIN = "https://garmin.test"
-PASSWORD = "test-only-owner-password-1234567890"
+# Exercise the full consent/token flow with the shortest accepted password.
+PASSWORD = "test-pass1"
 VERIFIER = "test-pkce-verifier-" + "a" * 43
 CHALLENGE = base64.urlsafe_b64encode(hashlib.sha256(VERIFIER.encode()).digest()).decode().rstrip("=")
 
@@ -169,8 +170,9 @@ def test_tokens_and_clients_survive_restart_but_not_audience_change(tmp_path):
 
 
 def test_connection_configuration_fails_closed(tmp_path):
-    with pytest.raises(ValueError, match="OWNER_PASSWORD"):
-        OwnerOAuth(ORIGIN, tmp_path, "short")
+    for password in ("", "test-pass"):
+        with pytest.raises(ValueError, match="OWNER_PASSWORD"):
+            OwnerOAuth(ORIGIN, tmp_path, password)
     for origin in ("http://garmin.test", "https://garmin.test/other", "https://user:pass@garmin.test", "https://"):
         with pytest.raises(ValueError, match="PUBLIC_URL"):
             OwnerOAuth(origin, tmp_path, PASSWORD)
