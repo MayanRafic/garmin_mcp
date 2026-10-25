@@ -6,9 +6,7 @@ ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 GARMINTOKENS=/data/garmin TZ=As
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 COPY scripts/install_tunnel.py ./scripts/install_tunnel.py
-# Optional CA mount is used only for builds behind the managed session proxy.
-RUN --mount=type=secret,id=proxy_ca \
-    if [ -r /run/secrets/proxy_ca ]; then export SSL_CERT_FILE=/run/secrets/proxy_ca; fi; \
-    uv sync --locked --no-dev && .venv/bin/python scripts/install_tunnel.py
+# Railway's Docker builder does not support secret mounts.
+RUN uv sync --locked --no-dev && .venv/bin/python scripts/install_tunnel.py
 ENV PATH="/app/.venv/bin:${PATH}"
 ENTRYPOINT ["garmin-mcp-cloud"]

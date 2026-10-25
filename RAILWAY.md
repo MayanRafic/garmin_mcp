@@ -164,7 +164,6 @@ uv run pytest tests/unit tests/integration -q
 docker build -f Dockerfile.railway -t garmin-mcp:cloud .
 ```
 
-The optional `proxy_ca` build secret supports builds behind a managed HTTPS
-proxy without baking that environment's CA into the image. Normal Railway builds
-do not need this secret. The tunnel-client installer verifies the release archive
+The production Dockerfile uses standard build steps without secret mounts,
+which Railway's Docker builder does not support. The tunnel-client installer verifies the release archive
 against its published SHA256 and keeps the binary version pinned.
