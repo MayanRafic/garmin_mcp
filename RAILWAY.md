@@ -52,6 +52,10 @@ is a comma-separated allowlist; arbitrary callbacks are rejected. Then sign in
 using the new connection password and explicitly allow read access.
 
 The server validates owner consent, CSRF, PKCE, client, resource, expiry and scope.
+The consent page preserves the browser's same-origin session check and permits
+its form redirect only to the configured OAuth callbacks. Browser regression
+coverage follows that redirect, exchanges the code and discovers protected tools
+against a local test server; it does not use a real Garmin session.
 OAuth clients and grant state persist in `/data/oauth/oauth.sqlite3` with private
 file permissions; access, refresh and authorization-code values are stored as
 hashes. Refresh tokens rotate; detected reuse revokes the token family. Request

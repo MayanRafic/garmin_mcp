@@ -266,6 +266,11 @@ class GuardMiddleware:
     def __init__(self, app, provider):
         self.app, self.provider = app, provider
         self.requests = defaultdict(deque)
+        # Chromium applies form-action to the redirect after a successful POST,
+        # so the owner-approved OAuth callbacks must be permitted as well.
+        callbacks = sorted({str(AnyHttpUrl(uri)).split("?", 1)[0].split("#", 1)[0]
+                            for uri in provider.redirects})
+        self.consent_form_action = "'self' " + " ".join(callbacks)
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -317,9 +322,11 @@ class GuardMiddleware:
                 # no-referrer makes Chromium send Origin:null on HTML form POSTs.
                 # Preserve same-origin form requests without sending referrers to external callbacks.
                 referrer_policy = b"same-origin" if path == "/consent" else b"no-referrer"
+                form_action = self.consent_form_action if path == "/consent" else "'self'"
                 headers.extend([(b"cache-control", b"no-store"), (b"referrer-policy", referrer_policy),
                                 (b"x-content-type-options", b"nosniff"), (b"x-frame-options", b"DENY"),
-                                (b"content-security-policy", b"default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")])
+                                (b"content-security-policy", ("default-src 'none'; form-action " + form_action +
+                                  "; frame-ancestors 'none'; base-uri 'none'").encode("ascii"))])
                 message = dict(message, headers=headers)
             await send(message)
         await self.app(scope, receive, safe_send)
