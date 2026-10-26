@@ -312,7 +312,7 @@ dev = [
 requires-dist = [
     { name = "garminconnect", specifier = "==0.2.38" },
     { name = "garth", specifier = ">=0.5.17,<0.6.0" },
-    { name = "mcp", specifier = ">=1.23.0" },
+    { name = "mcp", specifier = ">=1.23.0,<2" },
     { name = "python-dotenv", specifier = "==1.0.1" },
     { name = "requests", specifier = "==2.32.4" },
 ]

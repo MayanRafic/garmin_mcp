@@ -12,13 +12,15 @@ dependencies = [
     "python-dotenv==1.0.1",
     "garminconnect==0.2.38",
     "requests==2.32.4",
-    "mcp>=1.23.0",
+    "mcp>=1.23.0,<2",
     "garth>=0.5.17,<0.6.0",
 ]
 
 [project.scripts]
 garmin-mcp = "garmin_mcp:main"
 garmin-mcp-auth = "garmin_mcp.auth_cli:main"
+garmin-mcp-readonly = "garmin_mcp.cloud:readonly_main"
+garmin-mcp-cloud = "garmin_mcp.cloud:main"
 
 [tool.uv]
 dev-dependencies = [
