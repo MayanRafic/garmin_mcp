@@ -11,7 +11,8 @@ import getpass
 
 import requests
 from garth.exc import GarthHTTPError
-from garminconnect import Garmin, GarminConnectAuthenticationError
+from garminconnect import GarminConnectAuthenticationError, GarminConnectTooManyRequestsError
+from garmin_mcp.sdk import Garmin, encoded_session
 
 from garmin_mcp.token_utils import (
     get_token_path,
@@ -132,9 +133,11 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
         print(f"\n✓ OAuth tokens saved to: {os.path.expanduser(token_path)}")
 
         # Save tokens as base64
-        token_base64 = garmin.garth.dumps()
+        token_base64 = encoded_session(garmin.garth)
         expanded_base64_path = os.path.expanduser(token_base64_path)
-        with open(expanded_base64_path, "w") as token_file:
+        descriptor = os.open(expanded_base64_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w") as token_file:
             token_file.write(token_base64)
         print(f"✓ OAuth tokens (base64) saved to: {expanded_base64_path}")
 
@@ -157,9 +160,13 @@ def authenticate(token_path: str, token_base64_path: str, force_reauth: bool = F
         print("1. Add the server to your MCP client (e.g., Claude Desktop)")
         print("2. No need to include GARMIN_EMAIL or GARMIN_PASSWORD in config")
         print("3. The server will use your saved OAuth tokens")
-        print("\nTokens are valid for approximately 6 months.")
+        print("\nThe server refreshes your session automatically while Garmin permits it.")
 
         return True
+
+    except GarminConnectTooManyRequestsError:
+        print("\nGarmin is rate limiting sign-in. Wait before trying again.", file=sys.stderr)
+        return False
 
     except GarminConnectAuthenticationError as e:
         error_msg = str(e)

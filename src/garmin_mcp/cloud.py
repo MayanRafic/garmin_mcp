@@ -5,16 +5,21 @@ GARMIN_TRANSPORT=https selects the alternative single-owner OAuth HTTP server.
 GARMIN_SESSION_B64 is a one-time seed supplied through the host's secret store.
 """
 
+import base64
 import functools
+import json
+import math
 import os
 from pathlib import Path
 import re
 import sys
 import tempfile
 import threading
+import time
 
-from garminconnect import Garmin
-from garth.http import Client
+from garminconnect import GarminConnectAuthenticationError, GarminConnectTooManyRequestsError
+from garminconnect.client import Client
+from garmin_mcp.sdk import Garmin
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
@@ -35,7 +40,7 @@ READ_TOOLS = frozenset({
     "get_nutrition_daily_food_log", "get_nutrition_daily_meals",
     "get_nutrition_daily_settings",
 })
-TOKEN_FILES = ("oauth1_token.json", "oauth2_token.json")
+TOKEN_FILES = ("garmin_tokens.json",)
 
 
 def save_tokens(client, directory: Path) -> None:
@@ -60,17 +65,26 @@ def seed_tokens(directory: Path) -> None:
                for name in TOKEN_FILES]
     if all(present):
         return
-    if any(present):
-        raise ValueError("Incomplete saved Garmin session; restore both token files")
+    if any((directory / name).exists() for name in TOKEN_FILES):
+        raise ValueError("Incomplete saved Garmin session; restore the native session file")
     if not seed:
         raise ValueError("Set GARMIN_SESSION_B64 securely before first deployment")
     try:
+        data = json.loads(base64.b64decode(seed, validate=True))
+        if not isinstance(data, dict) or not all(data.get(key) for key in
+                ("di_token", "di_refresh_token", "di_client_id")):
+            raise ValueError("Native DI session required")
         client = Client()
-        client.loads(seed)
+        client.loads(json.dumps(data))
         save_tokens(client, directory)
     except Exception:
         # Token parser errors can contain secret values. Never echo them.
-        raise ValueError("GARMIN_SESSION_B64 is not a valid Garmin session") from None
+        raise ValueError(
+            "GARMIN_SESSION_B64 requires a current Garmin session. "
+            "Run the updated garmin-mcp-auth --force-reauth locally and replace "
+            "this Railway variable with the saved base64 file; old garth tokens "
+            "cannot be converted."
+        ) from None
 
 
 class PersistentGarmin:
@@ -80,6 +94,7 @@ class PersistentGarmin:
         self.client = client
         self.directory = directory
         self.lock = threading.RLock()
+        self.retry_after = 0.0
 
     def __getattr__(self, name):
         method = getattr(self.client, name)
@@ -89,8 +104,25 @@ class PersistentGarmin:
         @functools.wraps(method)
         def call(*args, **kwargs):
             with self.lock:
+                if time.monotonic() < self.retry_after:
+                    remaining = math.ceil(self.retry_after - time.monotonic())
+                    raise RuntimeError(
+                        f"Garmin temporarily rate limited; retry after {remaining} seconds."
+                    )
                 try:
+                    session = self.client.garth
+                    if isinstance(session, Client) and session.di_token and session._token_expires_soon():
+                        # The SDK's generic refresh suppresses refresh errors, which
+                        # can turn one failed refresh into repeated 401/refresh calls.
+                        # Surface a failed DI refresh before issuing the data request.
+                        session._refresh_di_token()
                     return method(*args, **kwargs)
+                except (GarminConnectTooManyRequestsError, GarminConnectAuthenticationError) as error:
+                    if not isinstance(error, GarminConnectTooManyRequestsError) and not re.search(r"\b(?:427|429)\b", str(error)):
+                        raise
+                    # Do not hammer the authentication service on every tool call.
+                    self.retry_after = time.monotonic() + 900
+                    raise RuntimeError("Garmin temporarily rate limited; retry after 900 seconds.") from None
                 finally:
                     save_tokens(self.client.garth, self.directory)
         return call
