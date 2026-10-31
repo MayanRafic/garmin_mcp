@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Tuple
 
-from garminconnect import Garmin
+from garmin_mcp.sdk import Garmin
 from garth.exc import GarthHTTPError
 
 

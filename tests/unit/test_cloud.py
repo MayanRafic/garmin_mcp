@@ -15,29 +15,26 @@ from garmin_mcp.cloud import (
 
 @pytest.fixture
 def session():
-    return base64.b64encode(json.dumps([
-        {"oauth_token": "test-token-1", "oauth_token_secret": "test-secret", "domain": "garmin.com"},
-        {"scope": "test", "jti": "test", "token_type": "bearer",
-         "access_token": "test-token-2", "refresh_token": "test-refresh",
-         "expires_in": 3600, "expires_at": 9999999999,
-         "refresh_token_expires_in": 3600, "refresh_token_expires_at": 9999999999},
-    ]).encode()).decode()
+    return base64.b64encode(json.dumps({
+        "di_token": "test-token-2", "di_refresh_token": "test-refresh",
+        "di_client_id": "test-client",
+    }).encode()).decode()
 
 
 def test_seed_is_private_and_not_reimported(tmp_path, monkeypatch, session):
     directory = tmp_path / "garmin"
     monkeypatch.setenv("GARMIN_SESSION_B64", session)
     seed_tokens(directory)
-    token = directory / "oauth2_token.json"
-    assert json.loads(token.read_text())["access_token"] == "test-token-2"
+    token = directory / "garmin_tokens.json"
+    assert json.loads(token.read_text())["di_token"] == "test-token-2"
     assert directory.stat().st_mode & 0o777 == 0o700
     assert token.stat().st_mode & 0o777 == 0o600
     assert "GARMIN_SESSION_B64" not in os.environ
-    newer = json.loads(token.read_text()) | {"access_token": "refreshed"}
+    newer = json.loads(token.read_text()) | {"di_token": "refreshed"}
     token.write_text(json.dumps(newer))
     monkeypatch.setenv("GARMIN_SESSION_B64", session)
     seed_tokens(directory)
-    assert json.loads(token.read_text())["access_token"] == "refreshed"
+    assert json.loads(token.read_text())["di_token"] == "refreshed"
 
 
 def test_bad_secret_is_not_echoed(tmp_path, monkeypatch):
@@ -50,18 +47,18 @@ def test_bad_secret_is_not_echoed(tmp_path, monkeypatch):
 def test_partial_session_is_not_silently_overwritten(tmp_path, monkeypatch, session):
     directory = tmp_path / "garmin"
     directory.mkdir()
-    (directory / "oauth1_token.json").write_text("existing")
+    (directory / "garmin_tokens.json").write_text("")
     monkeypatch.setenv("GARMIN_SESSION_B64", session)
     with pytest.raises(ValueError, match="Incomplete saved"):
         seed_tokens(directory)
-    assert (directory / "oauth1_token.json").read_text() == "existing"
+    assert (directory / "garmin_tokens.json").read_text() == ""
 
 
 @pytest.mark.parametrize("fail", [False, True])
 def test_refreshed_session_saved_after_sdk_call(tmp_path, fail):
     client = Mock()
     def dump(path):
-        for name in ("oauth1_token.json", "oauth2_token.json"):
+        for name in ("garmin_tokens.json",):
             (Path(path) / name).write_text('{"new": true}')
     client.garth.dump.side_effect = dump
     client.get_stats.side_effect = RuntimeError("API failed") if fail else None
@@ -71,7 +68,100 @@ def test_refreshed_session_saved_after_sdk_call(tmp_path, fail):
             wrapped.get_stats("2026-10-25")
     else:
         wrapped.get_stats("2026-10-25")
-    assert json.loads((tmp_path / "garmin/oauth2_token.json").read_text()) == {"new": True}
+    assert json.loads((tmp_path / "garmin/garmin_tokens.json").read_text()) == {"new": True}
+
+
+def test_native_seed_preserves_legacy_tokens_for_recovery(tmp_path, monkeypatch, session):
+    directory = tmp_path / "garmin"
+    directory.mkdir()
+    for name in ("oauth1_token.json", "oauth2_token.json"):
+        (directory / name).write_text("legacy-session")
+    monkeypatch.setenv("GARMIN_SESSION_B64", session)
+    seed_tokens(directory)
+    assert (directory / "garmin_tokens.json").is_file()
+    assert (directory / "oauth1_token.json").read_text() == "legacy-session"
+    assert (directory / "oauth2_token.json").read_text() == "legacy-session"
+
+
+def test_old_garth_seed_requires_fresh_login_without_leaking_tokens(tmp_path, monkeypatch):
+    legacy = base64.b64encode(json.dumps([{"oauth_token": "private-old-token"}, {}]).encode()).decode()
+    monkeypatch.setenv("GARMIN_SESSION_B64", legacy)
+    with pytest.raises(ValueError, match="cannot be converted") as caught:
+        seed_tokens(tmp_path / "garmin")
+    assert "private-old-token" not in str(caught.value)
+    assert not (tmp_path / "garmin/garmin_tokens.json").exists()
+
+
+def test_rate_limit_cooldown_blocks_other_tools_and_then_recovers(tmp_path, monkeypatch):
+    from garminconnect import GarminConnectTooManyRequestsError
+    from unittest.mock import patch
+    client = Mock()
+    client.get_stats.side_effect = GarminConnectTooManyRequestsError("sensitive detail")
+    wrapped = PersistentGarmin(client, tmp_path / "garmin")
+    clock = [1000.0]
+    monkeypatch.setattr("garmin_mcp.cloud.time.monotonic", lambda: clock[0])
+    with patch("garmin_mcp.cloud.save_tokens"):
+        with pytest.raises(RuntimeError, match="retry after 900"):
+            wrapped.get_stats("2026-10-31")
+        with pytest.raises(RuntimeError, match="retry after 900"):
+            wrapped.count_activities()
+        client.count_activities.assert_not_called()
+        clock[0] += 901
+        client.count_activities.return_value = 540
+        assert wrapped.count_activities() == 540
+
+
+def test_native_expired_session_refreshes_once_and_persists_rotation(tmp_path, monkeypatch):
+    from garmin_mcp.sdk import Garmin
+    def jwt(exp):
+        header = base64.urlsafe_b64encode(b'{"alg":"RS256"}').decode().rstrip("=")
+        body = base64.urlsafe_b64encode(json.dumps({"exp": exp}).encode()).decode().rstrip("=")
+        return f"{header}.{body}.test-signature"
+    api = Garmin()
+    assert api.garth is api.client
+    api.client.di_token = jwt(1)
+    api.client.di_refresh_token = "old-refresh"
+    api.client.di_client_id = "test-client"
+    new_token = jwt(9999999999)
+    response = Mock(ok=True)
+    response.json.return_value = {"access_token": new_token, "refresh_token": "rotated-refresh"}
+    post = Mock(return_value=response)
+    monkeypatch.setattr(api.client, "_di_token_post", post)
+    data_response = Mock(status_code=200)
+    data_response.json.return_value = {"totalCount": 540}
+    request = Mock(return_value=data_response)
+    monkeypatch.setattr(api.client._api_session, "request", request)
+    wrapped = PersistentGarmin(api, tmp_path / "garmin")
+    assert wrapped.count_activities() == 540
+    post.assert_called_once_with("test-client", "application/json", {
+        "grant_type": "refresh_token", "client_id": "test-client", "refresh_token": "old-refresh"})
+    request.assert_called_once()
+    assert request.call_args.kwargs["headers"]["Authorization"] == "Bearer " + new_token
+    saved = json.loads((tmp_path / "garmin/garmin_tokens.json").read_text())
+    assert saved["di_refresh_token"] == "rotated-refresh"
+    assert saved["di_token"] == new_token
+
+
+def test_rate_limited_native_refresh_skips_api_and_preserves_session(tmp_path, monkeypatch):
+    from garmin_mcp.sdk import Garmin
+    from garminconnect import GarminConnectAuthenticationError
+    api = Garmin()
+    api.client.di_token = "existing-token"
+    api.client.di_refresh_token = "existing-refresh"
+    api.client.di_client_id = "test-client"
+    monkeypatch.setattr(api.client, "_token_expires_soon", lambda: True)
+    refresh = Mock(side_effect=GarminConnectAuthenticationError("DI token refresh failed: 429"))
+    monkeypatch.setattr(api.client, "_refresh_di_token", refresh)
+    data_request = Mock()
+    monkeypatch.setattr(api.client._api_session, "request", data_request)
+    wrapped = PersistentGarmin(api, tmp_path / "garmin")
+    for _ in range(2):
+        with pytest.raises(RuntimeError, match="rate limited"):
+            wrapped.count_activities()
+    refresh.assert_called_once()
+    data_request.assert_not_called()
+    saved = json.loads((tmp_path / "garmin/garmin_tokens.json").read_text())
+    assert saved["di_refresh_token"] == "existing-refresh"
 
 
 @pytest.mark.asyncio

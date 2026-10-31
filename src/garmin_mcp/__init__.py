@@ -9,7 +9,8 @@ import requests
 from mcp.server.fastmcp import FastMCP
 
 from garth.exc import GarthHTTPError
-from garminconnect import Garmin, GarminConnectAuthenticationError
+from garminconnect import GarminConnectAuthenticationError
+from garmin_mcp.sdk import Garmin, encoded_session
 
 # Import all modules
 from garmin_mcp import activity_management
@@ -146,7 +147,7 @@ def init_api(email, password):
                 file=sys.stderr,
             )
             # Encode Oauth1 and Oauth2 tokens to base64 string and safe to file for next login (alternative way)
-            token_base64 = garmin.garth.dumps()
+            token_base64 = encoded_session(garmin.garth)
             dir_path = os.path.expanduser(tokenstore_base64)
             with open(dir_path, "w") as token_file:
                 token_file.write(token_base64)

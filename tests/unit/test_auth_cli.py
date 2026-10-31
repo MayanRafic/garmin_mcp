@@ -1,6 +1,7 @@
 """Unit tests for auth_cli module."""
 
 import os
+import base64
 import sys
 import tempfile
 from pathlib import Path
@@ -177,7 +178,8 @@ class TestAuthenticate:
             expanded_base64_path = os.path.expanduser(base64_path)
             base64_file = Path(expanded_base64_path)
             assert base64_file.exists()
-            assert base64_file.read_text() == "base64data"
+            assert base64.b64decode(base64_file.read_text()).decode() == "base64data"
+            assert base64_file.stat().st_mode & 0o777 == 0o600
 
     @patch("garmin_mcp.auth_cli.token_exists")
     @patch("garmin_mcp.auth_cli.get_credentials")
