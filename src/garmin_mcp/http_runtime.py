@@ -34,9 +34,18 @@ from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse, R
 from starlette.routing import Route
 
 from garmin_mcp.cloud import authenticated_client, build_app
+from garmin_mcp.workout_delivery import enabled as workouts_enabled
 
 
 SCOPES = ["garmin:read", "offline_access"]
+
+
+def required_scopes():
+    return ["garmin:read", "garmin:workouts"] if workouts_enabled() else ["garmin:read"]
+
+
+def valid_scopes():
+    return required_scopes() + ["offline_access"]
 STABLE_CALLBACK = "https://chatgpt.com/connector_platform_oauth_redirect"
 COOKIE = "__Host-garmin-consent"
 
@@ -123,9 +132,9 @@ class OwnerOAuth:
             self.store.put("client:" + client_info.client_id, client_info.model_dump(mode="json"))
 
     async def authorize(self, client, params):
-        scopes = params.scopes or ["garmin:read"]
-        if "garmin:read" not in scopes or set(scopes) - set(SCOPES):
-            raise AuthorizeError("invalid_scope", "Only Garmin read access is supported")
+        scopes = params.scopes or required_scopes()
+        if not set(required_scopes()).issubset(scopes) or set(scopes) - set(valid_scopes()):
+            raise AuthorizeError("invalid_scope", "Reconnect with the scopes advertised by this service")
         if params.resource != self.resource:
             raise AuthorizeError("invalid_request", "Unexpected resource")
         if not re.fullmatch(r"[A-Za-z0-9_-]{43}", params.code_challenge):
@@ -223,13 +232,18 @@ class OwnerOAuth:
                     "<!doctype html><html lang='en'><meta charset='utf-8'><title>Connect Garmin Health</title>"
                     "<meta name='viewport' content='width=device-width, initial-scale=1'>"
                     "<h1>Connect Garmin Health</h1><p>Allow " + escape(grant["name"]) +
-                    " to read your Garmin activity, sleep, wellness, weight and nutrition history.</p>"
-                    "<p>This connection cannot change your Garmin records.</p>"
+                    " to read your Garmin activity, sleep, wellness, weight and nutrition history.</p>" +
+                    ("<p>This connection can create, schedule and remove its own easy running workouts in Garmin Connect. "
+                     "It cannot edit recorded activities. Only use workout delivery when you authorize it.</p>"
+                     if "garmin:workouts" in grant["scopes"] else
+                     "<p>This connection cannot change your Garmin records.</p>") +
                     "<form method='post' action='/consent'>"
                     "<input type='hidden' name='ticket' value='" + escape(ticket, quote=True) + "'>"
                     "<input type='hidden' name='csrf' value='" + csrf + "'>"
                     "<label>Connection password <input name='password' type='password' autocomplete='current-password' required></label>"
-                    "<p>Use the connection password you saved during setup.</p><button>Allow read access</button></form></html>"
+                    "<p>Use the connection password you saved during setup.</p><button>" +
+                    ("Allow reading and workout delivery" if "garmin:workouts" in grant["scopes"] else "Allow read access") +
+                    "</button></form></html>"
                 )
                 response.set_cookie(COOKIE, csrf, secure=True, httponly=True, samesite="lax", max_age=600, path="/")
                 return response
@@ -333,12 +347,12 @@ class GuardMiddleware:
 
 
 def build_http_app(client, provider):
-    registration = ClientRegistrationOptions(enabled=True, valid_scopes=SCOPES, default_scopes=["garmin:read"])
+    registration = ClientRegistrationOptions(enabled=True, valid_scopes=valid_scopes(), default_scopes=required_scopes())
     revocation = RevocationOptions(enabled=True)
     issuer = AnyHttpUrl(provider.issuer)
     mcp = build_app(client, auth_server_provider=provider, stateless_http=True, json_response=True,
                     auth=AuthSettings(issuer_url=issuer, resource_server_url=AnyHttpUrl(provider.resource),
-                                      required_scopes=["garmin:read"], client_registration_options=registration,
+                                      required_scopes=required_scopes(), client_registration_options=registration,
                                       revocation_options=revocation),
                     transport_security=TransportSecuritySettings(allowed_hosts=[urlsplit(provider.origin).netloc],
                                                                  allowed_origins=[provider.origin, "https://chatgpt.com"]))

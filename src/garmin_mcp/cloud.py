@@ -23,7 +23,7 @@ from garmin_mcp.sdk import Garmin
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from garmin_mcp import activity_management, health_wellness, nutrition, training, weight_management
+from garmin_mcp import activity_management, health_wellness, nutrition, training, weight_management, workout_delivery
 
 
 READ_TOOLS = frozenset({
@@ -146,16 +146,25 @@ class ReadOnlyRegistration:
 
 
 def build_app(client, **settings) -> FastMCP:
+    writes = workout_delivery.enabled()
+    if writes and "garmin:workouts" not in getattr(settings.get("auth"), "required_scopes", []):
+        raise ValueError("Workout delivery requires HTTPS OAuth with garmin:workouts consent")
     app = FastMCP("Garmin Health", instructions=(
-        "Read-only personal Garmin history. Paginate get_activities until complete; "
+        ("Personal Garmin history and authorized easy-run delivery. " if writes else "Read-only personal Garmin history. ") +
+        "Paginate get_activities until complete; "
         "compare coverage against count_activities. Use daily sleep and HRV tools "
         "for recent trends. Missing wearable data is unknown, not zero. "
         "Wearable estimates cannot establish recovery from an injury."
+        + (" Workout delivery is enabled with explicit OAuth consent. Use stable session keys; "
+           "never repeat needs_review writes under a new key. Only report watch delivery when observed."
+           if writes else "")
     ), **settings)
     registrar = ReadOnlyRegistration(app)
     for module in (activity_management, health_wellness, training, weight_management, nutrition):
         module.configure(client)
         module.register_tools(registrar)
+    if writes:
+        workout_delivery.register_tools(app, client)
     return app
 
 

@@ -29,10 +29,10 @@ def setup(tmp_path):
     provider.store.db.close()
 
 
-def register(http, callback=STABLE_CALLBACK):
+def register(http, callback=STABLE_CALLBACK, scope="garmin:read offline_access"):
     return http.post("/register", json={"redirect_uris": [callback], "client_name": "ChatGPT",
         "token_endpoint_auth_method": "none", "grant_types": ["authorization_code", "refresh_token"],
-        "response_types": ["code"], "scope": "garmin:read offline_access"})
+        "response_types": ["code"], "scope": scope})
 
 
 def consent_request(http, client_id, **overrides):
@@ -81,6 +81,33 @@ def rpc(http, method, token=None, params=None):
         headers["Authorization"] = "Bearer " + token
     return http.post("/mcp", headers=headers,
                      json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}})
+
+
+def test_workout_mode_requires_new_consent_and_rejects_old_read_token(tmp_path, monkeypatch):
+    monkeypatch.setenv("GARMIN_ENABLE_WORKOUTS", "true")
+    monkeypatch.setenv("WORKOUT_DATA_DIR", str(tmp_path / "delivery"))
+    provider = OwnerOAuth(ORIGIN, tmp_path / "oauth", PASSWORD)
+    garmin = Mock()
+    old = provider.issue("old-client", ["garmin:read"])
+    with TestClient(build_http_app(garmin, provider), base_url=ORIGIN, follow_redirects=False) as http:
+        assert rpc(http, "tools/list", old.access_token).status_code == 403
+        client = register(http, scope="garmin:read garmin:workouts offline_access").json()
+        _, location = consent_request(http, client["client_id"], scope="garmin:read garmin:workouts offline_access")
+        consent = http.get(location)
+        assert "create, schedule and remove" in consent.text
+        assert "Allow reading and workout delivery" in consent.text
+        approved = approve(http, location)
+        callback = parse_qs(urlsplit(approved.headers["location"]).query)
+        tokens = http.post("/token", data={"grant_type": "authorization_code", "client_id": client["client_id"],
+            "code": callback["code"][0], "redirect_uri": STABLE_CALLBACK,
+            "resource": ORIGIN + "/mcp", "code_verifier": VERIFIER})
+        assert tokens.status_code == 200, tokens.text
+        result = rpc(http, "tools/list", tokens.json()["access_token"])
+        assert result.status_code == 200
+        names = {t["name"] for t in result.json()["result"]["tools"]}
+        assert names == READ_TOOLS | {"publish_running_workout", "get_workout_delivery", "remove_running_workout"}
+        assert not garmin.mock_calls
+    provider.store.db.close()
 
 
 def test_discovery_and_private_data_are_separated(setup):
