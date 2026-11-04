@@ -171,3 +171,37 @@ docker build -f Dockerfile.railway -t garmin-mcp:cloud .
 The production Dockerfile uses standard build steps without secret mounts,
 which Railway's Docker builder does not support. The tunnel-client installer verifies the release archive
 against its published SHA256 and keeps the binary version pinned.
+# Optional easy-running workout delivery
+
+Workout delivery is disabled by default. To enable it on the HTTPS service,
+set `GARMIN_ENABLE_WORKOUTS=true` and `WORKOUT_DATA_DIR=/data/workouts`.
+The existing private volume persists delivery receipts. No Garmin credentials
+or native session values need changing.
+
+This mode requires **new OAuth consent** for `garmin:read garmin:workouts`.
+Existing read-only tokens receive HTTP 403. Start a fresh authorization for the
+existing ChatGPT MCP connection. Older client registrations and read-only
+authorization requests are routed through the explicit workout consent page.
+Existing tokens and refresh grants are not elevated; token refresh alone cannot
+grant workout access. The consent page describes creation, scheduling and removal.
+
+Three narrow tools are exposed: `publish_running_workout`,
+`get_workout_delivery` and `remove_running_workout`. They support easy distance
+runs only. Distance includes all running warmup/cooldown, with no unvalidated
+pace or heart-rate target. The server does not enable generic Garmin writes.
+
+Use one stable session key per run. A durable reservation precedes remote writes.
+After an ambiguous result, inspect the receipt and Garmin Connect; **do not retry
+with a different key**. Uploads whose ID is unknown need manual reconciliation.
+An upload followed by a failed schedule may leave an unscheduled library workout;
+its saved ID can be removed through the owned-workout undo tool. No automatic
+cleanup follows an ambiguous timeout, as the schedule may actually have succeeded.
+`scheduled` means both the library workout and dated calendar entry were read
+back. It does not prove delivery to a watch. Device compatibility and normal
+Garmin synchronization still apply. Existing delivery keys are never reused
+after removal; use an explicitly revised key for an authorized replacement.
+
+To roll back, set `GARMIN_ENABLE_WORKOUTS=false`; this does not delete published
+workouts. Schedule editing, intervals, continuous coaching and Notion sync are
+not added by this change.
+
