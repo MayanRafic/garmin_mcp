@@ -118,7 +118,16 @@ class OwnerOAuth:
 
     async def get_client(self, client_id):
         value = self.store.get("client:" + client_id)
-        return OAuthClientInformationFull.model_validate(value) if value else None
+        if not value:
+            return None
+        client = OAuthClientInformationFull.model_validate(value)
+        if workouts_enabled() and "garmin:read" in (client.scope or "").split():
+            # Migrate the client's allowed capabilities, not its existing grants.
+            # Old access/refresh tokens retain their scopes; only a new owner
+            # consent below can issue workout permission.
+            allowed = list(dict.fromkeys((client.scope or "").split() + ["garmin:workouts"]))
+            client = client.model_copy(update={"scope": " ".join(allowed)})
+        return client
 
     async def register_client(self, client_info):
         if (not client_info.redirect_uris
@@ -133,8 +142,14 @@ class OwnerOAuth:
 
     async def authorize(self, client, params):
         scopes = params.scopes or required_scopes()
-        if not set(required_scopes()).issubset(scopes) or set(scopes) - set(valid_scopes()):
+        if "garmin:read" not in scopes or set(scopes) - set(valid_scopes()):
             raise AuthorizeError("invalid_scope", "Reconnect with the scopes advertised by this service")
+        if workouts_enabled() and "garmin:workouts" not in scopes:
+            # Existing installed clients explicitly request the old read scope.
+            # Take them through the new explicit consent, instead of bouncing
+            # straight back to ChatGPT with invalid_scope forever.
+            scopes = list(scopes) + ["garmin:workouts"]
+            params = params.model_copy(update={"scopes": scopes})
         if params.resource != self.resource:
             raise AuthorizeError("invalid_request", "Unexpected resource")
         if not re.fullmatch(r"[A-Za-z0-9_-]{43}", params.code_challenge):

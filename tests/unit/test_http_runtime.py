@@ -83,7 +83,12 @@ def rpc(http, method, token=None, params=None):
                      json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}})
 
 
-def test_workout_mode_requires_new_consent_and_rejects_old_read_token(tmp_path, monkeypatch):
+@pytest.mark.parametrize("registration_scope,request_scope", [
+    ("garmin:read garmin:workouts offline_access", "garmin:read garmin:workouts offline_access"),
+    ("garmin:read offline_access", "garmin:read offline_access"),
+    ("garmin:read offline_access", "garmin:read garmin:workouts offline_access"),
+])
+def test_workout_mode_requires_new_consent_and_rejects_old_read_token(tmp_path, monkeypatch, registration_scope, request_scope):
     monkeypatch.setenv("GARMIN_ENABLE_WORKOUTS", "true")
     monkeypatch.setenv("WORKOUT_DATA_DIR", str(tmp_path / "delivery"))
     provider = OwnerOAuth(ORIGIN, tmp_path / "oauth", PASSWORD)
@@ -91,8 +96,18 @@ def test_workout_mode_requires_new_consent_and_rejects_old_read_token(tmp_path, 
     old = provider.issue("old-client", ["garmin:read"])
     with TestClient(build_http_app(garmin, provider), base_url=ORIGIN, follow_redirects=False) as http:
         assert rpc(http, "tools/list", old.access_token).status_code == 403
-        client = register(http, scope="garmin:read garmin:workouts offline_access").json()
-        _, location = consent_request(http, client["client_id"], scope="garmin:read garmin:workouts offline_access")
+        client = register(http, scope=registration_scope).json()
+        # Simulate a registration created before the server upgrade.
+        registered = provider.store.get("client:" + client["client_id"])
+        registered["scope"] = registration_scope
+        provider.store.put("client:" + client["client_id"], registered)
+        old_grant = provider.issue(client["client_id"], ["garmin:read", "offline_access"])
+        escalation = http.post("/token", data={"grant_type": "refresh_token", "client_id": client["client_id"],
+            "refresh_token": old_grant.refresh_token, "resource": ORIGIN + "/mcp",
+            "scope": "garmin:read garmin:workouts offline_access"})
+        assert escalation.status_code == 400
+        assert rpc(http, "tools/list", old_grant.access_token).status_code == 403
+        _, location = consent_request(http, client["client_id"], scope=request_scope)
         consent = http.get(location)
         assert "create, schedule and remove" in consent.text
         assert "Allow reading and workout delivery" in consent.text
@@ -102,6 +117,7 @@ def test_workout_mode_requires_new_consent_and_rejects_old_read_token(tmp_path, 
             "code": callback["code"][0], "redirect_uri": STABLE_CALLBACK,
             "resource": ORIGIN + "/mcp", "code_verifier": VERIFIER})
         assert tokens.status_code == 200, tokens.text
+        assert "garmin:workouts" in tokens.json()["scope"].split()
         result = rpc(http, "tools/list", tokens.json()["access_token"])
         assert result.status_code == 200
         names = {t["name"] for t in result.json()["result"]["tools"]}

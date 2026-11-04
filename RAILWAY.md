@@ -179,10 +179,11 @@ The existing private volume persists delivery receipts. No Garmin credentials
 or native session values need changing.
 
 This mode requires **new OAuth consent** for `garmin:read garmin:workouts`.
-Existing read-only tokens receive HTTP 403. Recreate/reconnect the ChatGPT MCP
-connection so its OAuth client registration includes the newly advertised scopes;
-if an existing client explicitly requests read-only scope it cannot be upgraded
-silently. The consent page describes creation, scheduling and removal.
+Existing read-only tokens receive HTTP 403. Start a fresh authorization for the
+existing ChatGPT MCP connection. Older client registrations and read-only
+authorization requests are routed through the explicit workout consent page.
+Existing tokens and refresh grants are not elevated; token refresh alone cannot
+grant workout access. The consent page describes creation, scheduling and removal.
 
 Three narrow tools are exposed: `publish_running_workout`,
 `get_workout_delivery` and `remove_running_workout`. They support easy distance
