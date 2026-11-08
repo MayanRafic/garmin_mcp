@@ -90,3 +90,58 @@ def test_workout_flag_cannot_enable_unprotected_stdio(monkeypatch):
     monkeypatch.setenv("GARMIN_ENABLE_WORKOUTS", "true")
     with pytest.raises(ValueError, match="HTTPS OAuth"):
         build_app(Mock())
+
+
+def test_pace_targets_convert_to_speeds_and_preserve_total_distance():
+    payload = running_payload("pace", "2026-11-11", 11, 6.25, 7.5)
+    warmup, main, cooldown = payload["workoutSegments"][0]["workoutSteps"]
+    assert [s["endConditionValue"] for s in (warmup, main, cooldown)] == [1000, 9000, 1000]
+    assert main["targetValueOne"] == pytest.approx(1000 / 375)
+    assert main["targetValueTwo"] == pytest.approx(1000 / 450)
+    assert main["targetType"]["workoutTargetTypeKey"] == "pace.zone"
+    assert all(s["targetType"]["workoutTargetTypeKey"] == "no.target" for s in (warmup, cooldown))
+
+
+@pytest.mark.parametrize("bounds", [(6.25, None), (None, 7.5), (7.5, 6.25),
+                                    (float("nan"), 7.5), (6.25, float("inf")), (True, 7.5)])
+def test_invalid_pace_never_uploads(setup, bounds):
+    delivery, client, _ = setup
+    with pytest.raises(ValueError):
+        delivery.publish("pace", "2026-11-11", 11, *bounds)
+    client.upload_workout.assert_not_called()
+
+
+def test_pace_readback_and_restart_retry(setup):
+    delivery, client, path = setup
+    client.get_workout_by_id.return_value = running_payload("tlv-2026-11-06", "2026-11-06", 5, 6.25, 7.5)
+    receipt = delivery.publish("tlv-2026-11-06", "2026-11-06", 5, 6.25, 7.5)
+    assert receipt["status"] == "scheduled"
+    assert receipt["pace_fast_min_per_km"] == 6.25
+    assert Delivery(client, path).publish("tlv-2026-11-06", "2026-11-06", 5, 6.25, 7.5) == receipt
+    client.upload_workout.assert_called_once()
+    with pytest.raises(ValueError, match="another workout"):
+        delivery.publish("tlv-2026-11-06", "2026-11-06", 5, 6.5, 7.5)
+
+
+@pytest.mark.parametrize("change", ["stripped", "speed", "distance", "edge_target", "time", "reordered"])
+def test_unverified_pace_never_schedules(setup, change):
+    delivery, client, _ = setup
+    observed = running_payload("tlv-2026-11-06", "2026-11-06", 5, 6.25, 7.5)
+    steps = observed["workoutSegments"][0]["workoutSteps"]
+    if change == "stripped":
+        observed.pop("workoutSegments")
+    elif change == "speed":
+        steps[1]["targetValueOne"] = 6.25  # Wrong units must not pass readback.
+    elif change == "distance":
+        steps[1]["endConditionValue"] = 5000
+    elif change == "edge_target":
+        steps[0]["targetType"]["workoutTargetTypeKey"] = "pace.zone"
+    elif change == "time":
+        steps[1]["endCondition"]["conditionTypeKey"] = "time"
+    else:
+        steps[0]["stepOrder"] = 3
+    client.get_workout_by_id.return_value = observed
+    receipt = delivery.publish("tlv-2026-11-06", "2026-11-06", 5, 6.25, 7.5)
+    assert receipt["status"] == "needs_review"
+    assert receipt["workout_id"] == 17
+    client.schedule_workout.assert_not_called()
