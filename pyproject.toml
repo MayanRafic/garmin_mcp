@@ -21,6 +21,7 @@ garmin-mcp = "garmin_mcp:main"
 garmin-mcp-auth = "garmin_mcp.auth_cli:main"
 garmin-mcp-readonly = "garmin_mcp.cloud:readonly_main"
 garmin-mcp-cloud = "garmin_mcp.cloud:main"
+garmin-mcp-workout-batch = "garmin_mcp.workout_batch:main"
 
 [tool.uv]
 dev-dependencies = [
